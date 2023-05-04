@@ -55,7 +55,7 @@
         <jwt.version>4.2.1</jwt.version>
         <mapstruct.version>1.5.3.Final</mapstruct.version>
         <mybatis.version>2.2.2</mybatis.version>
-        <jackson.version>2.13.2</jackson.version>
+        <jackson.version>2.15.0</jackson.version>
         <gybyt.tool.version>0.0.3-SNAPSHOT</gybyt.tool.version>
         <easyexcel.version>3.2.1</easyexcel.version>
     </properties>
@@ -157,6 +157,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

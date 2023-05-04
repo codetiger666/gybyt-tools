@@ -56,7 +56,7 @@ public class ControllerResponseAdvice implements ResponseBodyAdvice<Object> {
         // 设置返回头为utf8 json字符串
         response.getHeaders().set("Content-Type", "application/json;charset=utf-8");
         // String类型不能直接包装
-        if (returnType.getGenericParameterType().equals(String.class)) {
+        if (returnType.getParameterType().equals(String.class)) {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 // 将数据包装在ResultVo里后转换为json串进行返回
