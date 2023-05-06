@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -339,6 +341,82 @@ public class CacheUtil {
     }
 
     /**
+     * 删除key
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     * @param key 缓存key
+     */
+    public static void remove(String cacheName, String preKey, String key) {
+        redisTemplate.delete(genKey(cacheName, preKey, key));
+    }
+
+    /**
+     * 删除key
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     * @param keyList 缓存key列表
+     */
+    public static void remove(String cacheName, String preKey, List<String> keyList) {
+        redisTemplate.delete(genKeyList(cacheName, preKey, keyList));
+    }
+
+    /**
+     * 删除key
+     * @param key 缓存key
+     */
+    public static void remove(String key) {
+        redisTemplate.delete(key);
+    }
+
+    /**
+     * 删除key
+     * @param key 缓存key
+     */
+    public static void remove(List<String> key) {
+        redisTemplate.delete(key);
+    }
+
+    /**
+     * 删除Hash key
+     * @param key 缓存key
+     * @param hashKey hash key
+     */
+    public static void removeHash(String key, Object hashKey) {
+        redisTemplate.opsForHash().delete(key, hashKey);
+    }
+
+    /**
+     * 删除Hash key
+     * @param key 缓存key
+     * @param hashKey hash key
+     */
+    public static void removeHash(String key, List<Object> hashKey) {
+        redisTemplate.opsForHash().delete(key, hashKey);
+    }
+
+    /**
+     * 删除Hash key
+     * @param key 缓存key
+     * @param hashKey hash key
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     */
+    public static void removeHash(String cacheName, String preKey, String key, List<Object> hashKey) {
+        redisTemplate.opsForHash().delete(genKey(cacheName, preKey, key), hashKey);
+    }
+
+    /**
+     * 删除Hash key
+     * @param key 缓存key
+     * @param hashKey hash key
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     */
+    public static void removeHash(String cacheName, String preKey, String key, Object hashKey) {
+        redisTemplate.opsForHash().delete(genKey(cacheName, preKey, key), hashKey);
+    }
+
+    /**
      * 不需要:结尾
      * @param cacheName
      * @param preKey
@@ -350,9 +428,25 @@ public class CacheUtil {
     }
 
     /**
+     * 不需要:结尾
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     * @param keyList 缓存key列表
+     * @return key列表
+     */
+    private static List<String> genKeyList(String cacheName, String preKey, List<String> keyList) {
+        List<String> keys = new ArrayList<>();
+        if (BaseUtil.isEmpty(keyList)) {
+            return keys;
+        }
+        keyList.forEach((key) -> keys.add(String.format("%s:%s:%s", cacheName, preKey, key)));
+        return keys;
+    }
+
+    /**
      * 生成随机过期时间(误差1s内)
      * @param timeout 缓存超时时间
-     * @return
+     * @return 过期时间
      */
     private static long genRandomTimeout(Long timeout) {
         Random random = new Random();
