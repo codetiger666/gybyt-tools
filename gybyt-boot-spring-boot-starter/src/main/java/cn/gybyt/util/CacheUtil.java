@@ -341,6 +341,28 @@ public class CacheUtil {
     }
 
     /**
+     * 是否存在hash key
+     * @param key 缓存key
+     * @param hashKey hash key
+     * @return
+     */
+    public static Boolean hasHashKey(String key, Object hashKey) {
+        return redisTemplate.opsForHash().hasKey(key, hashKey);
+    }
+
+    /**
+     * 是否存在hash key
+     * @param cacheName 缓存名称
+     * @param preKey 缓存前缀
+     * @param key 缓存key
+     * @param hashKey hash key
+     * @return
+     */
+    public static Boolean hasHashKey(String cacheName, String preKey, String key, Object hashKey) {
+        return redisTemplate.opsForHash().hasKey(genKey(cacheName, preKey, key), hashKey);
+    }
+
+    /**
      * 删除key
      * @param cacheName 缓存名称
      * @param preKey 缓存前缀
