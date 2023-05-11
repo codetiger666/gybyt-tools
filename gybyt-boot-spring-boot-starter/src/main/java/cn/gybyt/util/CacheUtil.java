@@ -6,6 +6,7 @@ import org.springframework.data.redis.serializer.SerializationException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -312,6 +313,22 @@ public class CacheUtil {
     }
 
     /**
+     * 添加缓存(非null值)
+     * @param key 缓存key
+     * @param o 需缓存的对象
+     */
+    public static void set(String key, Object o) {
+        if (BaseUtil.isNull(o)) {
+            return;
+        }
+        if (o instanceof String) {
+            stringRedisTemplate.opsForValue().set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+            return;
+        }
+        redisTemplate.opsForValue().set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * 添加Hash缓存(非null值)
      * @param key 缓存key
      * @param o 需缓存的对象
@@ -338,6 +355,93 @@ public class CacheUtil {
         }
         redisTemplate.opsForHash().put(key, hashKey, o);
         redisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 获取hash数量
+     * @param key
+     * @return
+     */
+    public static Long getHashSize(String key) {
+        return redisTemplate.opsForHash().size(key);
+    }
+
+    /**
+     * 获取hash集合
+     *
+     * @param key
+     * @return
+     */
+    public static <T, R> Map<T, R> getHashMap(String key) {
+        try {
+            return redisTemplate.opsForHash().entries(key);
+        } catch (SerializationException e) {
+            return stringRedisTemplate.opsForHash().entries(key);
+        }
+    }
+
+    /**
+     * 添加Hash缓存(非null值)
+     * @param key 缓存key
+     * @param o 需缓存的对象
+     */
+    public static void setHash(String key, Object hashKey, Object o) {
+        if (BaseUtil.isNull(o)) {
+            return;
+        }
+        redisTemplate.opsForHash().put(key, hashKey, o);
+        redisTemplate.expire(key, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 添加Hash缓存(非null值)
+     * @param key 缓存key
+     * @param map 需缓存的对象map
+     * @param timeout 超时时间(毫秒)
+     */
+    public static void setHash(String key, Map<?, ?> map, Long timeout) {
+        if (BaseUtil.isNull(map)) {
+            return;
+        }
+        if (BaseUtil.isNull(timeout)) {
+            timeout = 24 * 60 * 60 * 1000L;
+        }
+        redisTemplate.opsForHash().putAll(key, map);
+        if (timeout == -1L) {
+            return;
+        }
+        redisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 添加Hash缓存(非null值)
+     * @param key 缓存key
+     * @param map 需缓存的对象map
+     */
+    public static void setHash(String key, Map<?, ?> map) {
+        if (BaseUtil.isNull(map)) {
+            return;
+        }
+        redisTemplate.opsForHash().putAll(key, map);
+        redisTemplate.expire(key, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 是否存在 key
+     * @param key 缓存key
+     * @return
+     */
+    public static Boolean hasKey(String key) {
+        return redisTemplate.hasKey(key);
+    }
+
+    /**
+     * 是否存在 key
+     * @param key 缓存key
+     * @return
+     */
+    public static Boolean hasKey(String cacheName, String preKey, String key) {
+        return redisTemplate.hasKey(genKey(cacheName, preKey, key));
     }
 
     /**
