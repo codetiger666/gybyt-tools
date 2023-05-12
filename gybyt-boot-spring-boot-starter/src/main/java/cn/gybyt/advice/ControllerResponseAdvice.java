@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -54,7 +55,8 @@ public class ControllerResponseAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
         // 设置返回头为utf8 json字符串
-        response.getHeaders().set("Content-Type", "application/json;charset=utf-8");
+        HttpHeaders headers = response.getHeaders();
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
         // String类型不能直接包装
         if (returnType.getParameterType().equals(String.class)) {
             ObjectMapper objectMapper = new ObjectMapper();

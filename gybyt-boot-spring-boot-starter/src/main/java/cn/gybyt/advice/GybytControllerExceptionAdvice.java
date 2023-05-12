@@ -3,7 +3,9 @@ package cn.gybyt.advice;
 import cn.gybyt.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -32,7 +34,7 @@ public class GybytControllerExceptionAdvice {
     public ResponseEntity methodArgumentNotValidExceptionHandler(Exception e) {
         // 设置响应为JSON格式
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set("Content-Type", "application/json;charset=UTF-8");
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
         LoggerUtil.handleException(log, e);
         log.error(e.getMessage(), e);
         // 返回异常信息
@@ -48,8 +50,8 @@ public class GybytControllerExceptionAdvice {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity apiExceptionHandler(BaseException e) {
         // 设置响应为JSON格式
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-        headers.set("Content-Type", "application/json;charset=UTF-8");
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
         LoggerUtil.handleException(log, e);
         // 打印错误信息
         log.error(e.getMsg(), e);
