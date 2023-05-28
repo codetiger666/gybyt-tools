@@ -22,33 +22,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  **/
 @RestControllerAdvice
 public class GybytControllerExceptionAdvice {
+
     private final Logger log = LoggerFactory.getLogger(GybytControllerExceptionAdvice.class);
 
     /**
      * 处理web全局异常
      *
-     * @param e
-     * @return
+     * @param e 异常信息
+     * @return 自定义返回信息
      */
     @ExceptionHandler({Exception.class})
-    public ResponseEntity methodArgumentNotValidExceptionHandler(Exception e) {
+    public ResponseEntity<Object> methodArgumentNotValidExceptionHandler(Exception e) {
         // 设置响应为JSON格式
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
         LoggerUtil.handleException(log, e);
         log.error(e.getMessage(), e);
         // 返回异常信息
-        return new ResponseEntity(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
      * 处理自定义异常
      *
-     * @param e
-     * @return
+     * @param e 异常信息
+     * @return 自定义返回信息
      */
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity apiExceptionHandler(BaseException e) {
+    public ResponseEntity<Object> apiExceptionHandler(BaseException e) {
         // 设置响应为JSON格式
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -59,11 +60,11 @@ public class GybytControllerExceptionAdvice {
         HttpStatus httpStatus = HttpStatus.resolve(e.getHttpStatus());
         // 返回自定义状态码返回体(默认400错误)
         if (BaseUtil.isNull(httpStatus)) {
-            return new ResponseEntity(BaseResponse.failure(HttpStatusEnum.BUSINESSERROR.value(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.BUSINESSERROR.value(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
         }
         if (e.getChangeHttpStatus()) {
-            return new ResponseEntity(BaseResponse.failure(e.getCode(), e.getMsg()), headers, httpStatus);
+            return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, httpStatus);
         }
-        return new ResponseEntity(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
     }
 }

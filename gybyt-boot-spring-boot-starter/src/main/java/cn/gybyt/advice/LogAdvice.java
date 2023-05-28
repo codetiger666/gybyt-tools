@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 @Aspect
 @ConditionalOnClass(Aspect.class)
 public class LogAdvice {
+
     private final Logger log = LoggerFactory.getLogger(LogAdvice.class);
 
     /**
