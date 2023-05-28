@@ -37,7 +37,7 @@ public class GybytControllerSecurityExceptionAdvice {
     }
 
     @ExceptionHandler({LockedException.class})
-    public BaseResponse LockedException(LockedException e) {
+    public BaseResponse<Object> LockedException(LockedException e) {
         SpringUtil.getServletResponse().setStatus(HttpStatusEnum.UNAUTHORIZED.value());
         return new BaseResponse<>(HttpStatusEnum.UNAUTHORIZED.value(), "账号被锁定");
     }

@@ -62,6 +62,22 @@
 
     <dependencyManagement>
         <dependencies>
+            <!--子项目-->
+            <dependency>
+                <groupId>cn.gybyt</groupId>
+                <artifactId>gybyt-boot-spring-boot-starter</artifactId>
+                <version>${gybyt.tool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.gybyt</groupId>
+                <artifactId>gybyt-cloud-spring-cloud-starter</artifactId>
+                <version>${gybyt.tool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.gybyt</groupId>
+                <artifactId>core-util</artifactId>
+                <version>${gybyt.tool.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>

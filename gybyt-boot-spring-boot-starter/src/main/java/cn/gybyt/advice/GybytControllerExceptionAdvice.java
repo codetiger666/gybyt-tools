@@ -60,11 +60,8 @@ public class GybytControllerExceptionAdvice {
         HttpStatus httpStatus = HttpStatus.resolve(e.getHttpStatus());
         // 返回自定义状态码返回体(默认400错误)
         if (BaseUtil.isNull(httpStatus)) {
-            return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.BUSINESSERROR.value(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
+            httpStatus = HttpStatus.BAD_REQUEST;
         }
-        if (e.getChangeHttpStatus()) {
-            return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, httpStatus);
-        }
-        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, httpStatus);
     }
 }

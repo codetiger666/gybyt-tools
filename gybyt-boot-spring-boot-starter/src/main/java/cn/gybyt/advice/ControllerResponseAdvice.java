@@ -5,7 +5,6 @@ import cn.gybyt.util.BaseException;
 import cn.gybyt.util.BaseResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,7 +24,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  * @create: 2022/7/20 19:19
  **/
 @RestControllerAdvice
-@ConditionalOnProperty(prefix = "gybyt", name = "warpper", havingValue = "true")
 public class ControllerResponseAdvice implements ResponseBodyAdvice<Object> {
 
     /**

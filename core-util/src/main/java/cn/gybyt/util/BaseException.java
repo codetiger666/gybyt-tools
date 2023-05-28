@@ -13,20 +13,15 @@ public class BaseException extends RuntimeException {
     /**
      * 状态码
      */
-    int code = HttpStatusEnum.BUSINESSERROR.value();
+    private int code = HttpStatusEnum.BUSINESSERROR.value();
     /**
      * http状态码
      */
-    int httpStatus = HttpStatusEnum.SUCCESS.value();
+    private Integer httpStatus;
     /**
      * 错误信息
      */
-    String msg;
-    /**
-     * 是否修改状态码
-     */
-    Boolean changeHttpStatus;
-
+    private String msg;
     /**
      * 默认构造方法
      */
@@ -40,7 +35,6 @@ public class BaseException extends RuntimeException {
     public BaseException(String  msg){
         super(msg);
         this.msg = msg;
-        this.changeHttpStatus = false;
     }
     /**
      * @param msg 错误信息
@@ -49,7 +43,6 @@ public class BaseException extends RuntimeException {
     public BaseException(String msg, Throwable cause) {
         super(msg, cause);
         this.msg = msg;
-        this.changeHttpStatus = false;
     }
 
     /**
@@ -65,24 +58,23 @@ public class BaseException extends RuntimeException {
         super(msg);
         this.code = code;
         this.msg = msg;
-        this.changeHttpStatus = false;
     }
 
     /**
      * @param code 错误码
      * @param msg 错误信息
-     * @param changeHttpStatus 是否更改http状态码
+     * @param httpStatus http状态码
      * @return
      * @Author codetiger
      * @Description //TODO
      * @Date 22:39 2022/5/15
      * @Param
      **/
-    public BaseException(Integer code, String msg, Boolean changeHttpStatus) {
+    public BaseException(Integer code, String msg, Integer httpStatus) {
         super(msg);
         this.code = code;
         this.msg = msg;
-        this.changeHttpStatus = changeHttpStatus;
+        this.httpStatus = httpStatus;
     }
 
     public Integer getCode() {
@@ -101,10 +93,6 @@ public class BaseException extends RuntimeException {
         this.msg = msg;
     }
 
-    public Boolean getChangeHttpStatus() {
-        return changeHttpStatus;
-    }
-
     public void setCode(int code) {
         this.code = code;
     }
@@ -117,7 +105,4 @@ public class BaseException extends RuntimeException {
         this.httpStatus = httpStatus;
     }
 
-    public void setChangeHttpStatus(Boolean changeHttpStatus) {
-        this.changeHttpStatus = changeHttpStatus;
-    }
 }

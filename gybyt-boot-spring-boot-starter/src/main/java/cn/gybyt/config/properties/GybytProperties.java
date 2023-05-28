@@ -17,10 +17,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "gybyt")
 public class GybytProperties {
     /**
-     * 是否启用包装
-     */
-    private Boolean warpper;
-    /**
      * 是否开启请求处理
      */
     private Boolean enableRequestWarpper = true;
@@ -28,14 +24,6 @@ public class GybytProperties {
      * 是否开启缓存支持
      */
     private Boolean enableCache;
-
-    public Boolean getWarpper() {
-        return warpper;
-    }
-
-    public void setWarpper(Boolean warpper) {
-        this.warpper = warpper;
-    }
 
     public Boolean getEnableRequestWarpper() {
         return enableRequestWarpper;
