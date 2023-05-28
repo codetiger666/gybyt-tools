@@ -3,6 +3,9 @@ package cn.gybyt.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -28,14 +31,27 @@ import java.util.concurrent.ConcurrentHashMap;
  * @create: 2022/11/9 19:47
  **/
 @Component("gybytSpringUtil")
-public class SpringUtil implements ApplicationContextAware {
+public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextAware {
 
     private final static Logger log = LoggerFactory.getLogger(SpringUtil.class);
     private static ApplicationContext context;
+    private static ConfigurableListableBeanFactory beanFactory;
 
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         SpringUtil.context = context;
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        SpringUtil.beanFactory = beanFactory;
+    }
+
+    private static ListableBeanFactory getBeanFactory() {
+        if (BaseUtil.isNull(SpringUtil.context)) {
+            return SpringUtil.beanFactory;
+        }
+        return SpringUtil.context;
     }
 
     /**
@@ -49,7 +65,7 @@ public class SpringUtil implements ApplicationContextAware {
         if (clazz == null) {
             return null;
         }
-        return context.getBean(clazz);
+        return getBeanFactory().getBean(clazz);
     }
 
     /**
@@ -63,7 +79,7 @@ public class SpringUtil implements ApplicationContextAware {
         if (BaseUtil.isEmpty(beanName)) {
             return null;
         }
-        return (T) context.getBean(beanName);
+        return (T) getBeanFactory().getBean(beanName);
     }
 
     /**
@@ -81,7 +97,7 @@ public class SpringUtil implements ApplicationContextAware {
         if (clazz == null) {
             return null;
         }
-        return (T) context.getBean(beanName, clazz);
+        return (T) getBeanFactory().getBean(beanName, clazz);
     }
 
     /**
@@ -95,7 +111,7 @@ public class SpringUtil implements ApplicationContextAware {
         if (clazz == null) {
             return null;
         }
-        return context.getBeansOfType(clazz);
+        return getBeanFactory().getBeansOfType(clazz);
     }
 
     /**
