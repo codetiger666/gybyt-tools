@@ -58,6 +58,7 @@
         <jackson.version>2.15.0</jackson.version>
         <gybyt.tool.version>0.0.3-SNAPSHOT</gybyt.tool.version>
         <easyexcel.version>3.2.1</easyexcel.version>
+        <lombok.version>1.18.24</lombok.version>
     </properties>
 
     <dependencyManagement>
@@ -171,6 +172,11 @@
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -178,7 +184,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
         </dependency>
     </dependencies>
 
