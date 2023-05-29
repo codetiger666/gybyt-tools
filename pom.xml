@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.gybyt</groupId>
-    <artifactId>tools</artifactId>
+    <artifactId>gybyt-bom</artifactId>
     <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>gybyt tools</name>
@@ -29,7 +29,7 @@
     </developers>
     <modules>
         <module>gybyt-boot-spring-boot-starter</module>
-        <module>core-util</module>
+        <module>gybyt-util</module>
         <module>gybyt-cloud-spring-cloud-starter</module>
     </modules>
 
@@ -75,7 +75,7 @@
             </dependency>
             <dependency>
                 <groupId>cn.gybyt</groupId>
-                <artifactId>core-util</artifactId>
+                <artifactId>gybyt-util</artifactId>
                 <version>${gybyt.tool.version}</version>
             </dependency>
             <dependency>

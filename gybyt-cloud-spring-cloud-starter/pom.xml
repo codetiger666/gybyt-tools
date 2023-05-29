@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cn.gybyt</groupId>
-        <artifactId>tools</artifactId>
+        <artifactId>gybyt-bom</artifactId>
         <version>0.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>gybyt-cloud-spring-cloud-starter</artifactId>
     <packaging>jar</packaging>
-    <version>${gybyt.tool.version}</version>
 
     <dependencies>
         <!--openfeign-->
@@ -34,7 +33,6 @@
         <dependency>
             <groupId>cn.gybyt</groupId>
             <artifactId>gybyt-boot-spring-boot-starter</artifactId>
-            <version>${gybyt.tool.version}</version>
         </dependency>
     </dependencies>
 </project>
