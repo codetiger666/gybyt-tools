@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
-
+    private final static String DRUID_POOL_CLASS_NAME = "com.alibaba.druid.pool.DruidPooledPreparedStatement";
     private Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
 
@@ -48,20 +48,20 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         Statement statement;
         // 代理对象获取代理对象，不是获取原对象
         if (Proxy.isProxyClass(firstArg.getClass())) {
-            statement = (Statement) SystemMetaObject.forObject(firstArg).getValue("h.statement");
+            statement = ReflectUtil.getFieldValueByFieldName(firstArg, "h.statement");
         } else {
             statement = (Statement) firstArg;
+        }
+        // 阿里巴巴连接池特殊处理
+        if (ReflectUtil.isSameType(DRUID_POOL_CLASS_NAME, ReflectUtil.getClass(statement))) {
+            statement = ReflectUtil.getFieldValueByFieldName(statement, "stmt.raw");
         }
         String sql = statement.toString();
         // 格式化sql语句
         if (BaseUtil.isNotEmpty(sql)) {
             try {
                 sql = sql.replaceAll("\\s+", " ");
-                Matcher matcher = this.sqlPattern.matcher(sql);
-                matcher.find();
-                if (matcher.groupCount() > 0) {
-                    sql = matcher.group(1);
-                }
+                sql = sql.replaceAll("^.*?ClientPreparedStatement: ", "");
             } catch (Exception ignored) {
             }
         }
@@ -74,7 +74,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         long end = System.currentTimeMillis();
         if (BaseUtil.isNotEmpty(sql)) {
             log.info(
-                    "\n==============  Sql Start  ==============\nExecute ID  ：{}\nExecute SQL ：{}\nExecute Time：{} ms\n==============  Sql  End   ==============\n\n",
+                    "\n\n==============  Sql Start  ==============\nExecute ID  ：{}\nExecute SQL ：{}\nExecute Time：{} ms\n==============  Sql  End   ==============\n",
                     BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement).getId() : "",
                     sql,
                     end - start

@@ -34,7 +34,7 @@ public class GybytMybatisProperties {
     /**
      * SQL语句匹配规则
      */
-    private String sqlPattern = "insert.*|update.*|select.*|delete.*|create.*|drop.*|truncate.*";
+    private String sqlPattern = ".*?(insert.*)|.*?(update.*)|.*?(select.*)|.*?(delete.*)|.*?(create.*)|.*?(drop.*)|.*?(truncate.*)";
 
     public Boolean getSqlLog() {
         return sqlLog;

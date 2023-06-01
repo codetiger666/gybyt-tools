@@ -54,7 +54,7 @@ public class ReflectUtil {
      * @return
      */
     public static <T> List<Field> getAllFields(T t, ModifierConstant... modifier) {
-        Class clazz = ReflectUtil.getClass(t);
+        Class<?> clazz = ReflectUtil.getClass(t);
         List<Field> fields = new ArrayList<>();
         while (clazz != null) {
             Field[] declaredFields = clazz.getDeclaredFields();
@@ -136,16 +136,39 @@ public class ReflectUtil {
      * @param <T>
      */
     public static <T> T getFieldValueByFieldName(Object o, String name) {
-        Class aClass = ReflectUtil.getClass(o);
-        while (aClass != null) {
-            try {
-                Field field = aClass.getDeclaredField(name);
-                field.setAccessible(true);
-                return  (T)field.get(o);
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {}
-            aClass = aClass.getSuperclass();
+        if (BaseUtil.isEmpty(name)) {
+            return null;
         }
-        return null;
+        String[] nameArray = name.split("\\.");
+        if (nameArray.length == 1) {
+            Class<?> aClass = ReflectUtil.getClass(o);
+            while (aClass != null) {
+                try {
+                    Field field = aClass.getDeclaredField(name);
+                    field.setAccessible(true);
+                    return  (T)field.get(o);
+                } catch (NoSuchFieldException | IllegalAccessException ignored) {}
+                aClass = aClass.getSuperclass();
+            }
+            return null;
+        }
+        for (String fieldName : nameArray) {
+            o = getFieldValueByFieldName(o, fieldName);
+        }
+        return (T) o;
+    }
+
+    public static void main(String[] args) {
+        class Test {
+            public String a;
+            public Test b;
+        }
+        Test test = new Test();
+        test.a = "111";
+        Test test1 = new Test();
+        test1.b = test;
+        String c = getFieldValueByFieldName(test1, "b.a");
+        System.out.println(c);
     }
 
     /**
@@ -153,7 +176,7 @@ public class ReflectUtil {
      * @param o
      * @return
      */
-    public static Class getClass(Object o) {
+    public static Class<?> getClass(Object o) {
         if (Objects.isNull(o)) {
             return null;
         }
@@ -169,11 +192,11 @@ public class ReflectUtil {
      * @param <T>
      */
     public static <T> T getMethodResultByMethodName(Object o, String name, Object... args) {
-        Class aClass = ReflectUtil.getClass(o);
+        Class<?> aClass = ReflectUtil.getClass(o);
         Method method;
         while (aClass != null) {
             try {
-                Class[] classes = null;
+                Class<?>[] classes = null;
                 if (args.length > 0) {
                     classes = new Class[args.length];
                     for (int i = 0; i < args.length; i++) {
@@ -197,11 +220,11 @@ public class ReflectUtil {
      * @param name
      * @return
      */
-    public static Field getFieldByName(Class clazz, String name) {
+    public static Field getFieldByName(Class<?> clazz, String name) {
         while (clazz != null) {
             try {
                 return clazz.getDeclaredField(name);
-            } catch (NoSuchFieldException e) {}
+            } catch (NoSuchFieldException ignored) {}
             clazz = clazz.getSuperclass();
         }
         return null;
@@ -231,9 +254,9 @@ public class ReflectUtil {
      * @param <T>
      */
     public static <T> T newInstance(Object o) {
-        Class aClass = getClass(o);
+        Class<?> aClass = getClass(o);
         try {
-            Constructor declaredConstructor = aClass.getDeclaredConstructor();
+            Constructor<?> declaredConstructor = aClass.getDeclaredConstructor();
             declaredConstructor.setAccessible(true);
             return  (T) declaredConstructor.newInstance();
         } catch (Exception e) {
@@ -247,13 +270,32 @@ public class ReflectUtil {
      * @return
      * @param <T>
      */
-    public static <T> T newInstance(Class clazz) {
+    public static <T> T newInstance(Class<?> clazz) {
         try {
-            Constructor declaredConstructor = clazz.getDeclaredConstructor();
+            Constructor<?> declaredConstructor = clazz.getDeclaredConstructor();
             declaredConstructor.setAccessible(true);
             return  (T) declaredConstructor.newInstance();
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 是否是相同类型
+     * @param className 类名称(全称)
+     * @param target 目标类型
+     * @return
+     */
+    public static Boolean isSameType(String className, Class<?> target) {
+        if (BaseUtil.isEmpty(className)) {
+            return false;
+        }
+        try {
+            Class<?> aClass = Class.forName(className);
+            if (aClass.equals(target)) {
+                return true;
+            }
+        } catch (ClassNotFoundException ignored) {}
+        return false;
     }
 }
