@@ -4,8 +4,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 /**
  * 文件操作工具类
@@ -19,6 +29,10 @@ import java.util.Base64;
 public class FileUtil {
 
     private final static Logger log = LoggerFactory.getLogger("FileUtil");
+    /**
+     * jar 文件正则检验器
+     */
+    private final static Pattern JAR_FILE_PATTERN = Pattern.compile("(.*?\\.jar)!?(.+)");
 
     /**
      * @param path 文件路径
@@ -108,7 +122,7 @@ public class FileUtil {
      * @param path 文件路径
      * @return 文件列表
      **/
-    public ArrayList<String> listDirFiles(String path) throws Exception {
+    public static List<String> listDirFiles(String path) {
         ArrayList<String> files = new ArrayList<>();
         File file = new File(path);
         if (file.isDirectory()){
@@ -124,7 +138,95 @@ public class FileUtil {
             }
             return files;
         }else{
-            throw new Exception("文件夹不存在");
+            throw new BaseException("文件夹不存在");
         }
+    }
+
+    /**
+     * 读取文件内容为字符串
+     * @param path
+     * @return
+     */
+    public static String readString(String path) {
+        if (BaseUtil.isEmpty(path)) {
+            return "";
+        }
+        InputStream inputStream = getFileInputStream(path);
+        if (BaseUtil.isEmpty(inputStream)) {
+            return "";
+        }
+        return new String(readInputStream(inputStream), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * 读取文件内容为字符串
+     * @param path
+     * @return
+     */
+    public static String readString(String path, Charset charset) {
+        if (BaseUtil.isEmpty(path)) {
+            return "";
+        }
+        InputStream inputStream = getFileInputStream(path);
+        if (BaseUtil.isEmpty(inputStream)) {
+            return "";
+        }
+        return new String(readInputStream(inputStream), charset);
+    }
+
+    /**
+     * 获取文件输入流
+     * @param path
+     * @return
+     */
+    public static InputStream getFileInputStream(String path) {
+        try {
+            if (BaseUtil.isEmpty(path)) {
+                return null;
+            }
+            URL url;
+            if (path.startsWith("classpath:")) {
+                path = path.replaceAll("^classpath:", "");
+                url = Thread.currentThread().getContextClassLoader().getResource(path);
+                path = url.getPath();
+            }
+            path = path.replaceAll("^file:", "");
+            Matcher matcher = JAR_FILE_PATTERN.matcher(path);
+            if (matcher.find()) {
+                JarFile jarFile = new JarFile(matcher.group(1));
+                ZipEntry entry = jarFile.getEntry(matcher.group(2).replaceAll("\\\\", "/").replaceAll("^/", ""));
+                if (BaseUtil.isNull(entry)) {
+                    return null;
+                }
+                return jarFile.getInputStream(entry);
+            }
+            return Files.newInputStream(Paths.get(path));
+        } catch (IOException e) {
+            log.error("读取文件失败", e);
+            return null;
+        }
+    }
+
+    /**
+     * 输入流中读取数据
+     * @param inputStream
+     * @return
+     */
+    public static byte[] readInputStream(InputStream inputStream) {
+        if (BaseUtil.isNull(inputStream)) {
+            return new byte[0];
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            int maxBufferSize = 1024;
+            byte[] bufferByte = new byte[maxBufferSize];
+            int len;
+            while ((len = inputStream.read(bufferByte, 0, maxBufferSize)) != -1) {
+                byteArrayOutputStream.write(bufferByte, 0, len);
+            }
+        } catch (IOException e) {
+            return new byte[0];
+        }
+        return byteArrayOutputStream.toByteArray();
     }
 }

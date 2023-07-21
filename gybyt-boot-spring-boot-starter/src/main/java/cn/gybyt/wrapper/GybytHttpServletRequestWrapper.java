@@ -1,6 +1,6 @@
 package cn.gybyt.wrapper;
 
-import cn.gybyt.util.BaseUtil;
+import cn.gybyt.util.FileUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -8,7 +8,10 @@ import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * request对象包装
@@ -62,7 +65,7 @@ public class GybytHttpServletRequestWrapper extends HttpServletRequestWrapper {
         if (this.body == null) {
             // 请求体为空时不再执行读操作
             if (this.request.getContentLength() != -1) {
-                this.body = BaseUtil.getByteByInputStream(super.getInputStream());
+                this.body = FileUtil.readInputStream(super.getInputStream());
             } else {
                 this.body = new byte[0];
             }

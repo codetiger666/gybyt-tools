@@ -1,6 +1,5 @@
 package cn.gybyt.util;
 
-import lombok.SneakyThrows;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
 
@@ -39,7 +38,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T get(String cacheName, String preKey, String key, Callable<T> callable, Long timeout) {
         T t;
         try {
@@ -47,10 +45,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            set(genKey(cacheName, preKey, key), t, timeout);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                set(genKey(cacheName, preKey, key), t, timeout);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -63,7 +63,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T get(String cacheName, String preKey, String key, Callable<T> callable) {
         T t;
         try {
@@ -71,10 +70,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            set(genKey(cacheName, preKey, key), t, null);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                set(genKey(cacheName, preKey, key), t, null);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -104,7 +105,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T get(String key, Callable<T> callable, Long timeout) {
         T t;
         try {
@@ -112,10 +112,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForValue().get(key);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            set(key, t, timeout);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                set(key, t, timeout);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -127,7 +129,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T get(String key, Callable<T> callable) {
         T t;
         try {
@@ -135,10 +136,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForValue().get(key);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            set(key, t, null);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                set(key, t, null);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -148,7 +151,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T get(String key) {
         T t;
         try {
@@ -184,7 +186,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T getHash(String key, Object hashKey, Callable<T> callable) {
         T t;
         try {
@@ -192,10 +193,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForHash().get(key, hashKey);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            setHash(key, hashKey, t, null);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                setHash(key, hashKey, t, null);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -208,7 +211,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T getHash(String key, Object hashKey, Callable<T> callable, Long timeout) {
         T t;
         try {
@@ -216,10 +218,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForHash().get(key, hashKey);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            setHash(key, hashKey, t, timeout);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                setHash(key, hashKey, t, timeout);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 
@@ -247,7 +251,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey, Callable<T> callable) {
         T t;
         try {
@@ -255,10 +258,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            setHash(key, hashKey, t, null);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                setHash(key, hashKey, t, null);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
     /**
@@ -270,7 +275,6 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    @SneakyThrows
     public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey, Callable<T> callable, Long timeout) {
         T t;
         try {
@@ -278,10 +282,12 @@ public class CacheUtil {
         } catch (SerializationException e) {
             t = (T) stringRedisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
         }
-        if (BaseUtil.isNull(t)) {
-            t = callable.call();
-            setHash(key, hashKey, t, timeout);
-        }
+        try {
+            if (BaseUtil.isNull(t)) {
+                t = callable.call();
+                setHash(key, hashKey, t, timeout);
+            }
+        } catch (Exception ignored) {}
         return t;
     }
 

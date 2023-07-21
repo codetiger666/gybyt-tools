@@ -17,7 +17,6 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -227,19 +226,9 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
         // 请求体为空时不再执行读操作
         if (request.getContentLength() != -1) {
             try {
-                // 记录实际长度
-                int len;
-                // 初始化缓冲对象
-                byte[] bytes = new byte[1024];
-                // 新建字节输出对象
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 // 获取输出流
                 ServletInputStream inputStream = request.getInputStream();
-                // 当剩余内容不为空时继续
-                while ((len = inputStream.read(bytes)) != -1) {
-                    byteArrayOutputStream.write(bytes, 0, len);
-                }
-                body = byteArrayOutputStream.toByteArray();
+                body = FileUtil.readInputStream(inputStream);
             } catch (IOException e) {
                 body = new byte[0];
             }

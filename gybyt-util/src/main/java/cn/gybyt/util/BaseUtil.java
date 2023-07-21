@@ -1,8 +1,5 @@
 package cn.gybyt.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
@@ -87,24 +84,6 @@ public class BaseUtil {
      */
     public static Boolean isNotNull(Object o) {
         return Objects.nonNull(o);
-    }
-
-
-    /**
-     * 输入流获取字节数组
-     * @param inputStream
-     * @return
-     */
-    public static byte[] getByteByInputStream(InputStream inputStream) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        try {
-            int len;
-            byte[] bytes = new byte[1024];
-            while ((len = inputStream.read(bytes)) != -1) {
-                byteArrayOutputStream.write(bytes, 0, len);
-            }
-        } catch (IOException e) {}
-        return byteArrayOutputStream.toByteArray();
     }
 
     /**
