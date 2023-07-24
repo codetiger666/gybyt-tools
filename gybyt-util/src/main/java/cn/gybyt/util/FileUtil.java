@@ -193,6 +193,10 @@ public class FileUtil {
             path = path.replaceAll("^file:", "");
             Matcher matcher = JAR_FILE_PATTERN.matcher(path);
             if (matcher.find()) {
+                if (matcher.groupCount() < 2) {
+                    log.error("匹配文件名失败");
+                    return null;
+                }
                 JarFile jarFile = new JarFile(matcher.group(1));
                 ZipEntry entry = jarFile.getEntry(matcher.group(2).replaceAll("\\\\", "/").replaceAll("^/", ""));
                 if (BaseUtil.isNull(entry)) {
