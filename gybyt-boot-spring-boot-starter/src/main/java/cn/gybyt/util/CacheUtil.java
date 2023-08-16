@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
  **/
 public class CacheUtil {
 
-    private static RedisTemplate redisTemplate;
-    private static RedisTemplate stringRedisTemplate;
+    private static final RedisTemplate redisTemplate;
+    private static final RedisTemplate stringRedisTemplate;
 
     static {
         redisTemplate = SpringUtil.getBean(RedisTemplate.class, "gybytRedisTemplate");

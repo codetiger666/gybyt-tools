@@ -26,7 +26,7 @@ public class GybytHttpServletRequestWrapper extends HttpServletRequestWrapper {
     /**
      * request对象
      */
-    private HttpServletRequest request;
+    private final HttpServletRequest request;
     /**
      * 缓存请求报文，以支持多次读取
      */

@@ -34,7 +34,7 @@ public class GybytMybatisMapperRefreshPlugin {
     /**
      * sqlSessionFactory 对象
      */
-    private SqlSessionFactory sqlSessionFactory;
+    private final SqlSessionFactory sqlSessionFactory;
     /**
      * mapper文件列表
      */
@@ -42,11 +42,11 @@ public class GybytMybatisMapperRefreshPlugin {
     /**
      * mapper文件位置
      */
-    private String packageSearchPath;
+    private final String packageSearchPath;
     /**
      * 刷新延迟
      */
-    private Long refreshInterval;
+    private final Long refreshInterval;
     /**
      * 存储更改的文件
      */
@@ -54,7 +54,7 @@ public class GybytMybatisMapperRefreshPlugin {
     /**
      * 记录文件是否变化
      */
-    private HashMap<String, Long> fileMapping = new HashMap<>();
+    private final HashMap<String, Long> fileMapping = new HashMap<>();
 
     public GybytMybatisMapperRefreshPlugin(String packageSearchPath, Long refreshInterval, SqlSessionFactory sqlSessionFactory) {
         this.sqlSessionFactory = sqlSessionFactory;

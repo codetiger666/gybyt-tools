@@ -11,7 +11,7 @@ package cn.gybyt.util;
  **/
 public enum HttpStatusEnum {
     SUCCESS(200, "请求成功"),
-    BUSINESSERROR(400, "业务异常"),
+    BUSINESS_ERROR(400, "业务异常"),
     UNAUTHORIZED(401, "用户未登录或令牌失效"),
     FORBIDDEN(403, "用户无权访问"),
     NOTFOUND(404, "资源未找到"),

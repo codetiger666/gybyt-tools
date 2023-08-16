@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
  **/
 public abstract class TypeUtil<T> {
 
-    private Type type;
+    private final Type type;
 
     protected TypeUtil(){
         Class<?> parameterizedTypeReferenceSubclass = findParameterizedTypeReferenceSubclass(ReflectUtil.getClass(this));
@@ -25,6 +25,10 @@ public abstract class TypeUtil<T> {
 
     public Type getType(){
         return this.type;
+    }
+
+    public Class<T> getTypeClass(){
+        return (Class<T>) this.type;
     }
 
     public String getClassName(){

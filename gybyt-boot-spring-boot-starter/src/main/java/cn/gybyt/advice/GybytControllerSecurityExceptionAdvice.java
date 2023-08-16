@@ -4,6 +4,7 @@ import cn.gybyt.util.BaseResponse;
 import cn.gybyt.util.HttpStatusEnum;
 import cn.gybyt.util.SpringUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @author: codetiger
  * @create: 2022/11/21 20:01
  **/
-@Order(-100)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 @ConditionalOnClass(SecurityExpressionHandler.class)
 public class GybytControllerSecurityExceptionAdvice {

@@ -13,19 +13,22 @@ public class BaseException extends RuntimeException {
     /**
      * 状态码
      */
-    private int code = HttpStatusEnum.BUSINESSERROR.value();
+    private int code = HttpStatusEnum.BUSINESS_ERROR.value();
     /**
      * http状态码
      */
-    private Integer httpStatus;
+    private int httpStatus = HttpStatusEnum.BUSINESS_ERROR.value();
     /**
      * 错误信息
      */
     private String msg;
+
     /**
      * 默认构造方法
      */
     public BaseException() {
+        super("业务异常");
+        this.msg = "业务异常";
     }
 
     /**
@@ -48,13 +51,9 @@ public class BaseException extends RuntimeException {
     /**
      * @param code 错误码
      * @param msg 错误信息
-     * @return
-     * @Author codetiger
-     * @Description //TODO
-     * @Date 22:39 2022/5/15
-     * @Param
+     *
      **/
-    public BaseException(Integer code, String msg) {
+    public BaseException(int code, String msg) {
         super(msg);
         this.code = code;
         this.msg = msg;
@@ -64,13 +63,9 @@ public class BaseException extends RuntimeException {
      * @param code 错误码
      * @param msg 错误信息
      * @param httpStatus http状态码
-     * @return
-     * @Author codetiger
-     * @Description //TODO
-     * @Date 22:39 2022/5/15
-     * @Param
+     *
      **/
-    public BaseException(Integer code, String msg, Integer httpStatus) {
+    public BaseException(int code, String msg, int httpStatus) {
         super(msg);
         this.code = code;
         this.msg = msg;

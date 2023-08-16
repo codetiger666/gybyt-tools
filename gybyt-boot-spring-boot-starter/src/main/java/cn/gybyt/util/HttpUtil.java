@@ -25,7 +25,7 @@ import java.util.Set;
 public class HttpUtil {
 
     // restTemplate对象
-    private static RestTemplate restTemplate;
+    private static final RestTemplate restTemplate;
 
     static {
         restTemplate = SpringUtil.getBean(RestTemplate.class);

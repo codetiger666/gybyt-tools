@@ -1,5 +1,6 @@
 package cn.gybyt.util;
 
+import cn.gybyt.tools.PatternPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 /**
@@ -29,10 +29,6 @@ import java.util.zip.ZipEntry;
 public class FileUtil {
 
     private final static Logger log = LoggerFactory.getLogger("FileUtil");
-    /**
-     * jar 文件正则检验器
-     */
-    private final static Pattern JAR_FILE_PATTERN = Pattern.compile("(.*?\\.jar)!?(.+)");
 
     /**
      * @param path 文件路径
@@ -116,7 +112,7 @@ public class FileUtil {
 
     /**
      * @Author codetiger
-     * @Description //TODO
+     * @Description
      * @Date 9:26 2022/7/19
      * @Param
      * @param path 文件路径
@@ -185,13 +181,11 @@ public class FileUtil {
                 return null;
             }
             URL url;
-            if (path.startsWith("classpath:")) {
-                path = path.replaceAll("^classpath:", "");
-                url = Thread.currentThread().getContextClassLoader().getResource(path);
-                path = url.getPath();
-            }
+            path = path.replaceAll("^classpath:", "");
+            url = Thread.currentThread().getContextClassLoader().getResource(path);
+            path = BaseUtil.isNull(url) ? path : url.getPath();
             path = path.replaceAll("^file:", "");
-            Matcher matcher = JAR_FILE_PATTERN.matcher(path);
+            Matcher matcher = PatternPool.getPattern("(.*?\\.jar)!?(.+)").matcher(path);
             if (matcher.find()) {
                 if (matcher.groupCount() < 2) {
                     log.error("匹配文件名失败");
