@@ -59,12 +59,6 @@ public class GybytControllerExceptionAdvice {
         LoggerUtil.handleException(log, e);
         // 打印错误信息
         log.error(e.getMsg(), e);
-        // 转换状态码为HttpStatus对象
-        HttpStatus httpStatus = HttpStatus.resolve(e.getHttpStatus());
-        // 返回自定义状态码返回体(默认400错误)
-        if (BaseUtil.isNull(httpStatus)) {
-            httpStatus = HttpStatus.BAD_REQUEST;
-        }
-        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, httpStatus);
+        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, e.getHttpStatus());
     }
 }

@@ -19,19 +19,19 @@ import javax.servlet.http.HttpServletResponse;
  * @create: 2022/8/7 15:30
  **/
 @RestController
-public class FilterErrorController{
+public class GybytAuthError {
 
     /**
-     * 用于spring security处理用户未登录或令牌失效异常
+     * 用于处理用户鉴权异常
      * @param request
      * @param httpServletResponse
      * @return
      */
-    @RequestMapping("/error/userNotLogin")
+    @RequestMapping("/error/authError")
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     public BaseResponse error(HttpServletRequest request, HttpServletResponse httpServletResponse) {
-        BaseException baseException = (BaseException) request.getAttribute("filterError");
-        return BaseResponse.failure(HttpStatusEnum.UNAUTHORIZED.value(), baseException.getMsg());
+        BaseException baseException = (BaseException) request.getAttribute("authError");
+        return BaseResponse.failure(baseException.getCode(), baseException.getMsg());
     }
 
 }
