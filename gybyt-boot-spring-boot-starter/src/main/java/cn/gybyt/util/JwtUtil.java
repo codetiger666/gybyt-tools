@@ -31,7 +31,7 @@ public class JwtUtil {
 
     public static JwtProperties getJwtProperties(){
         if (jwtProperties == null){
-            jwtProperties = SpringUtil.getBean("jwtProperties");
+            jwtProperties = SpringUtil.getBean(JwtProperties.class);
         }
         return jwtProperties;
     }
