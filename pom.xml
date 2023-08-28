@@ -41,28 +41,54 @@
     </scm>
 
     <properties>
+        <!-- maven 编译版本 -->
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <!-- 字符编码 -->
+        <file.encoding>UTF-8</file.encoding>
         <!-- 文件拷贝时的编码 -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- 编译时的编码 -->
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <slf4j.version>1.7.36</slf4j.version>
-        <springboot.version>2.6.6</springboot.version>
-        <nacos.version>2.2.9.RELEASE</nacos.version>
-        <fastjson.version>2.0.18</fastjson.version>
+        <springboot.version>2.6.13</springboot.version>
+        <springcloud.version>2021.0.5</springcloud.version>
+        <springcloud.alibaba.version>2021.0.5.0</springcloud.alibaba.version>
+        <fastjson.version>2.0.39</fastjson.version>
         <jwt.version>4.2.1</jwt.version>
         <mapstruct.version>1.5.3.Final</mapstruct.version>
         <mybatis.version>2.2.2</mybatis.version>
         <jackson.version>2.15.0</jackson.version>
         <gybyt.tool.version>0.0.3-SNAPSHOT</gybyt.tool.version>
-        <easyexcel.version>3.2.1</easyexcel.version>
-        <lombok.version>1.18.24</lombok.version>
+        <easyexcel.version>3.3.2</easyexcel.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!--spring cloud 依赖-->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${springcloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--spring boot 依赖-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${springcloud.alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!--子项目-->
             <dependency>
                 <groupId>cn.gybyt</groupId>
@@ -78,75 +104,6 @@
                 <groupId>cn.gybyt</groupId>
                 <artifactId>gybyt-util</artifactId>
                 <version>${gybyt.tool.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <!--spingboot web依赖-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-web</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--redis依赖-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-redis</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--jackson-->
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <!--security-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--生成元数据-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-configuration-processor</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--在META-INF中生成忽略配置元数据，加快自动配置的初始化速度，可选-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-autoconfigure-processor</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--aop依赖-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-aop</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <!--openfeign-->
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-openfeign</artifactId>
-                <version>${nacos.version}</version>
-            </dependency>
-            <!--nacos-->
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-                <version>${nacos.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-                <version>${nacos.version}</version>
             </dependency>
             <!--fastjson-->
             <dependency>
@@ -172,11 +129,6 @@
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -194,9 +146,9 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                    <encoding>UTF-8</encoding>
-                    <charset>UTF-8</charset>
-                    <docencoding>UTF-8</docencoding>
+                    <encoding>${file.encoding}</encoding>
+                    <charset>${file.encoding}</charset>
+                    <docencoding>${file.encoding}</docencoding>
                     <failOnError>false</failOnError>
                 </configuration>
                 <executions>
@@ -245,6 +197,9 @@
                             <version>${springboot.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${file.encoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
