@@ -6,6 +6,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -97,6 +99,16 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
             return null;
         }
         return (T) getBeanFactory().getBean(beanName, clazz);
+    }
+
+    /**
+     * 根据beanId、类型获取对象
+     *
+     * @param beanName
+     * @return
+     */
+    public static void registerBean(Object o, String beanName) {
+        beanFactory.registerSingleton(beanName, o);
     }
 
     /**

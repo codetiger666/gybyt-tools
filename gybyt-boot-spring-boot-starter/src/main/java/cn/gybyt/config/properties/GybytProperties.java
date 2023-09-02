@@ -4,6 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+import java.util.Map;
+
 /**
  * 工具提示
  *
@@ -40,5 +43,6 @@ public class GybytProperties {
     public void setEnableCache(Boolean enableCache) {
         this.enableCache = enableCache;
     }
+
 
 }

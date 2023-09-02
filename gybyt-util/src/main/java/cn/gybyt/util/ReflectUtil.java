@@ -1,6 +1,7 @@
 package cn.gybyt.util;
 
 import cn.gybyt.constant.ModifierConstant;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,6 +19,7 @@ import java.util.Objects;
  * @author: codetiger
  * @create: 2023/3/4 21:16
  **/
+@Slf4j
 public class ReflectUtil {
 
     /**
@@ -297,5 +299,43 @@ public class ReflectUtil {
             }
         } catch (ClassNotFoundException ignored) {}
         return false;
+    }
+
+    /**
+     * 加载类
+     * @param className 类全限定名
+     * @return
+     * @param <T>
+     */
+    public static <T> Class<T> loadClass(String className) {
+        if (BaseUtil.isEmpty(className)) {
+            return null;
+        }
+        try {
+            return (Class<T>) Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            log.error("加载类 {} 失败", e);
+            return null;
+        }
+    }
+
+    /**
+     * 设置字段属性
+     * @param o
+     * @param filedName
+     * @param value
+     */
+    public static void setFiledValue(Object o, String filedName, Object value) {
+        Field field = ReflectUtil.getFieldByName(o, filedName);
+        if (field == null) {
+            log.error("获取字段失败");
+            return;
+        }
+        field.setAccessible(true);
+        try {
+            field.set(o, value);
+        } catch (IllegalAccessException e) {
+            log.error("设置字段{}失败", filedName);
+        }
     }
 }

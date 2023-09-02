@@ -54,7 +54,8 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         }
         // 阿里巴巴连接池特殊处理
         if (ReflectUtil.isSameType(DRUID_POOL_CLASS_NAME, ReflectUtil.getClass(statement))) {
-            statement = ReflectUtil.getFieldValueByFieldName(statement, "stmt.raw");
+            Statement statement1 = ReflectUtil.getFieldValueByFieldName(statement, "stmt.raw");
+            statement = statement1 == null ? statement : statement1;
         }
         String sql = statement.toString();
         // 格式化sql语句

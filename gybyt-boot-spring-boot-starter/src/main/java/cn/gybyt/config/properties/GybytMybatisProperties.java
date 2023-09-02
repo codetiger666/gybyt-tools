@@ -1,5 +1,7 @@
 package cn.gybyt.config.properties;
 
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -35,9 +37,38 @@ public class GybytMybatisProperties {
      * SQL语句匹配规则
      */
     private String sqlPattern = ".*?(insert.*)|.*?(update.*)|.*?(select.*)|.*?(delete.*)|.*?(create.*)|.*?(drop.*)|.*?(truncate.*)";
+    /**
+     * 驼峰转换
+     */
+    @Value("${mybatis.configuration.mapUnderscoreToCamelCase:false}")
+    private boolean mapUnderscoreToCamelCase;
+    @Value("${mybatis.configuration.defaultFetchSize:100}")
+    private Integer defaultFetchSize;
+    @Value("${mybatis.configuration.defaultStatementTimeout:30}")
+    private Integer defaultStatementTimeout;
 
     public Boolean getSqlLog() {
         return sqlLog;
+    }
+
+    public boolean getMapUnderscoreToCamelCase() {
+        return mapUnderscoreToCamelCase;
+    }
+
+    public Integer getDefaultFetchSize() {
+        return defaultFetchSize;
+    }
+
+    public Integer getDefaultStatementTimeout() {
+        return defaultStatementTimeout;
+    }
+
+    public void setDefaultFetchSize(Integer defaultFetchSize) {
+        this.defaultFetchSize = defaultFetchSize;
+    }
+
+    public void setDefaultStatementTimeout(Integer defaultStatementTimeout) {
+        this.defaultStatementTimeout = defaultStatementTimeout;
     }
 
     public void setSqlLog(Boolean sqlLog) {
