@@ -4,6 +4,7 @@ import cn.gybyt.config.properties.GybytDynamicProperties;
 import cn.gybyt.config.properties.GybytMybatisProperties;
 import cn.gybyt.dynamic.GybytDynamicDataSourceRoute;
 import cn.gybyt.util.BaseException;
+import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.ReflectUtil;
 import cn.gybyt.util.SpringUtil;
 import com.alibaba.druid.pool.DruidDataSource;
@@ -99,9 +100,12 @@ public class GybytDynamicDataSourceConfig {
         sqlSessionFactoryBean.setDataSource(gybytDynamicDataSourceRoute);
         sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(gybytMybatisProperties.getMapperPath()));
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
-        configuration.setMapUnderscoreToCamelCase(gybytMybatisProperties.getMapUnderscoreToCamelCase());
+        configuration.setMapUnderscoreToCamelCase(gybytMybatisProperties.isMapUnderscoreToCamelCase());
         configuration.setDefaultFetchSize(gybytMybatisProperties.getDefaultFetchSize());
         configuration.setDefaultStatementTimeout(gybytMybatisProperties.getDefaultStatementTimeout());
+        if (BaseUtil.isNotEmpty(gybytMybatisProperties.getTypeAliasesPackage())) {
+            sqlSessionFactoryBean.setTypeAliasesPackage(gybytMybatisProperties.getTypeAliasesPackage());
+        }
         sqlSessionFactoryBean.setConfiguration(configuration);
         sqlSessionFactoryBean.setPlugins(interceptors.toArray(new Interceptor[0]));
         return sqlSessionFactoryBean.getObject();
