@@ -11,6 +11,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,21 +92,18 @@ public class GybytDynamicDataSourceConfig {
     }
 
     @ConditionalOnMissingBean
-    @ConditionalOnClass(SqlSessionFactory.class)
+    @ConditionalOnClass({SqlSessionFactory.class, MybatisProperties.class})
     @Primary
     @Bean
     public SqlSessionFactory sqlSessionFactoryBean(GybytDynamicDataSourceRoute gybytDynamicDataSourceRoute, List<Interceptor> interceptors) throws Exception {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(gybytDynamicDataSourceRoute);
+        MybatisProperties mybatisProperties = SpringUtil.getBean(MybatisProperties.class);
         sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(gybytMybatisProperties.getMapperPath()));
-        org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
-        configuration.setMapUnderscoreToCamelCase(gybytMybatisProperties.isMapUnderscoreToCamelCase());
-        configuration.setDefaultFetchSize(gybytMybatisProperties.getDefaultFetchSize());
-        configuration.setDefaultStatementTimeout(gybytMybatisProperties.getDefaultStatementTimeout());
-        if (BaseUtil.isNotEmpty(gybytMybatisProperties.getTypeAliasesPackage())) {
-            sqlSessionFactoryBean.setTypeAliasesPackage(gybytMybatisProperties.getTypeAliasesPackage());
+        if (BaseUtil.isNotEmpty(mybatisProperties.getTypeAliasesPackage())) {
+            sqlSessionFactoryBean.setTypeAliasesPackage(mybatisProperties.getTypeAliasesPackage());
         }
-        sqlSessionFactoryBean.setConfiguration(configuration);
+        sqlSessionFactoryBean.setConfiguration(mybatisProperties.getConfiguration());
         sqlSessionFactoryBean.setPlugins(interceptors.toArray(new Interceptor[0]));
         return sqlSessionFactoryBean.getObject();
     }

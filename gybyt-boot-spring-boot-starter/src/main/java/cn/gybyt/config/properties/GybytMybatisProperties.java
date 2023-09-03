@@ -3,7 +3,6 @@ package cn.gybyt.config.properties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -36,15 +35,5 @@ public class GybytMybatisProperties {
      * SQL语句匹配规则
      */
     private String sqlPattern = ".*?(insert.*)|.*?(update.*)|.*?(select.*)|.*?(delete.*)|.*?(create.*)|.*?(drop.*)|.*?(truncate.*)";
-    /**
-     * 驼峰转换
-     */
-    private boolean mapUnderscoreToCamelCase;
-    /**
-     * 别名包
-     */
-    private String typeAliasesPackage;
-    private Integer defaultFetchSize;
-    private Integer defaultStatementTimeout;
 
 }

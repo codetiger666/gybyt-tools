@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 动态数据源切面
@@ -31,14 +32,6 @@ import java.lang.reflect.Method;
 @Slf4j
 public class GybytDataSourceAspect {
 
-    /**
-     * 缓存当前类数据源key
-     */
-    ThreadLocal<String> cacheTypeDataSourceKey = new ThreadLocal<>();
-    /**
-     * 缓存切换的数据源key
-     */
-    ThreadLocal<String> cacheSwitchDataSourceKey = new ThreadLocal<>();
     @Resource
     private GybytDynamicProperties gybytDynamicProperties;
 
@@ -47,7 +40,7 @@ public class GybytDataSourceAspect {
      * @param joinPoint
      */
     @Before(value = "@annotation(cn.gybyt.annotation.SwitchDataSource) || @within(cn.gybyt.annotation.SwitchDataSource)")
-    public void beforeOpt(JoinPoint joinPoint) {
+    public void beforeSwitchDataSource(JoinPoint joinPoint) {
         /*因为是对注解进行切面，所以这边无需做过多判定，直接获取注解的值，进行环绕，将数据源设置成远方，然后结束后，清楚当前线程数据源*/
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
         SwitchDataSource switchSource = method.getAnnotation(SwitchDataSource.class);
@@ -64,7 +57,6 @@ public class GybytDataSourceAspect {
             }
         }
         String key = gybytDynamicProperties.getDynamicBeanNamePrefix() + switchSource.value();
-        cacheSwitchDataSourceKey.set(key);
         GybytDataSourceHolder.setDataSource(key);
     }
 
@@ -85,8 +77,7 @@ public class GybytDataSourceAspect {
                 }
             }
         }
-        if (switchDataSource == null && cacheSwitchDataSourceKey.get() == null) {
-            cacheTypeDataSourceKey.set(GybytDataSourceHolder.getDataSource());
+        if (switchDataSource == null) {
             GybytDataSourceHolder.clearDataSource();
         }
     }
@@ -95,7 +86,7 @@ public class GybytDataSourceAspect {
      * 方法执行之后清除掉ThreadLocal中存储的KEY，这样动态数据源会使用默认的数据源
      */
     @After(value = "@annotation(cn.gybyt.annotation.SwitchDataSource) || @within(cn.gybyt.annotation.SwitchDataSource)")
-    public void afterOpt() {
+    public void afterSwitchDataSource(JoinPoint joinPoint) {
         GybytDataSourceHolder.clearDataSource();
     }
 
@@ -103,9 +94,17 @@ public class GybytDataSourceAspect {
      * 清理服务配置
      */
     @After("@within(org.springframework.stereotype.Service)")
-    public void afterService() {
-        GybytDataSourceHolder.setDataSource(cacheTypeDataSourceKey.get());
-        cacheTypeDataSourceKey.remove();
+    public void afterService(JoinPoint joinPoint) {
+        GybytDataSourceHolder.clearDataSource();
+    }
+
+    /**
+     * 生成缓存key
+     * @param joinPoint
+     * @return
+     */
+    private String getKeyName(JoinPoint joinPoint) {
+        return Thread.currentThread().getName() + joinPoint.toString();
     }
 
 }
