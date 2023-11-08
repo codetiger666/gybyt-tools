@@ -21,33 +21,32 @@ public class TreeUtil {
      * @param nodeList
      * @return
      */
-    public static <T extends TreeNode> List<T> merge(List<T> nodeList) {
+    public static <T extends TreeNode<T, R>, R> List<T> merge(List<T> nodeList) {
         // 存储所有顶级节点
         List<T> parentNodeList = new ArrayList<>();
         // 用来存储顶级节点
-        HashSet<String> parentIdSet = new HashSet<>();
+        HashSet<R> parentIdSet = new HashSet<>();
         // 为空返回空集合
         if (BaseUtil.isEmpty(nodeList)) {
             return new ArrayList<>();
         }
         // 根据主键生成map
-        Map<String, T> nodeMap = nodeList.stream().collect(Collectors.toMap(TreeNode::getId, Function.identity(), (key1, key2) -> key2));
+        Map<R, T> nodeMap = nodeList.stream().collect(Collectors.toMap(TreeNode::getId, Function.identity(), (key1, key2) -> key2));
         nodeList.forEach(node -> {
             // 查找当前节点父节点
-            TreeNode parentNode = nodeMap.get(node.getParentId());
+            TreeNode<T, R> parentNode = nodeMap.get(node.getParentId());
             // 如果父节点不存在，则当前节点为顶级节点
             if (BaseUtil.isEmpty(parentNode)) {
-                parentIdSet.add(node.getId());
+                parentIdSet.add((R) node.getId());
             } else {
                 parentNode.setHasChildren(true);
                 parentNode.getChildren().add(node);
             }
         });
         // 顶级节点主键迭代器
-        Iterator<String> iterator = parentIdSet.iterator();
         // 拼装需返回的树状结构
-        while (iterator.hasNext()) {
-            parentNodeList.add(nodeMap.get(iterator.next()));
+        for (R id : parentIdSet) {
+            parentNodeList.add(nodeMap.get(id));
         }
         return parentNodeList;
     }

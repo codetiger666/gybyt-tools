@@ -10,16 +10,16 @@ import java.util.List;
  * @author: codetiger
  * @create: 2023/3/10 19:46
  **/
-public class TreeNode<T extends TreeNode> {
+public class TreeNode<T extends TreeNode, R> {
 
     /**
      * 树形节点主键
      */
-    private String id;
+    private R id;
     /**
      * 父节点
      */
-    private String parentId;
+    private R parentId;
     /**
      * 是否有孩子
      */
@@ -53,19 +53,19 @@ public class TreeNode<T extends TreeNode> {
         this.value = value;
     }
 
-    public String getId() {
+    public R getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(R id) {
         this.id = id;
     }
 
-    public String getParentId() {
+    public R getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(R parentId) {
         this.parentId = parentId;
     }
 

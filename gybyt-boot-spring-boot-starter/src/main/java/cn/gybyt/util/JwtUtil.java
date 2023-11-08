@@ -42,7 +42,7 @@ public class JwtUtil {
      * @return
      */
     public static String createToken(Map<String, String> map){
-        String token = getJwtProperties().getTokenPrefix();
+        String token = getJwtProperties().getTokenPrefix() + " ";
         JWTCreator.Builder builder = JWT.create();
         for (String key : map.keySet()) {
             builder.withClaim(key, map.get(key));

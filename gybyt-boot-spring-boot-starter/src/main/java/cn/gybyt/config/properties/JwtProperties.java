@@ -28,7 +28,7 @@ public class JwtProperties {
     /**
      * token前缀
      */
-    private String tokenPrefix = "Bearer ";
+    private String tokenPrefix = "Bearer";
 
     /**
      * 签名密钥

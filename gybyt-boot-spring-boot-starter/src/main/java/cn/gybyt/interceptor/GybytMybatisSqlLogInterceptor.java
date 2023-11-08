@@ -9,7 +9,6 @@ import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Signature;
-import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.session.ResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +33,12 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
     private final static String DRUID_POOL_CLASS_NAME = "com.alibaba.druid.pool.DruidPooledPreparedStatement";
-    private Pattern sqlPattern;
+    private final Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
-        this.sqlPattern = Pattern.compile(String.format(".*(%s)", this.gybytMybatisProperties.getSqlPattern()), Pattern.CASE_INSENSITIVE);
+        this.sqlPattern = Pattern.compile("^.*?((:?" + gybytMybatisProperties.getSqlPattern() + ").*$)", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -62,9 +61,11 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         if (BaseUtil.isNotEmpty(sql)) {
             try {
                 sql = sql.replaceAll("\\s+", " ");
-                sql = sql.replaceAll("^.*?ClientPreparedStatement: ", "");
-            } catch (Exception ignored) {
-            }
+                Matcher matcher = sqlPattern.matcher(sql);
+                if (matcher.find() && matcher.groupCount() > 1) {
+                    sql = matcher.group(1);
+                }
+            } catch (Exception ignored) {}
         }
         // 获取实际sql执行方法
         Object delegate = ReflectUtil.getFieldValueByFieldName(invocation.getTarget(), "delegate");
