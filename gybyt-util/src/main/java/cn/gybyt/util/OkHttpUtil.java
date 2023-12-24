@@ -47,7 +47,7 @@ public class OkHttpUtil {
     public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, Method method, Media media, TypeUtil<T> typeUtil) {
         Request.Builder requestBuilder = new Request.Builder();
         RequestBody body = null;
-        if (media == Media.FORM) {
+        if (media == Media.FORM && (BaseUtil.isNotNull(data) || BaseUtil.isNotEmpty(paramMap))) {
             JSONObject jsonObject = JSONObject.from(data, JSONWriter.Feature.FieldBased);
             FormBody.Builder formBodyBuilder = new FormBody.Builder();
             jsonObject.forEach((k, v) -> formBodyBuilder.add(k, String.valueOf(v)));
@@ -56,7 +56,7 @@ public class OkHttpUtil {
             }
             body = formBodyBuilder.build();
         }
-        if (media == null || media == Media.JSON) {
+        if ((media == null || media == Media.JSON) && BaseUtil.isNotNull(data)) {
             body = RequestBody.create(MediaType.parse("application/json"), JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
         }
         if (BaseUtil.isNotEmpty(paramMap) && media != Media.FORM) {
@@ -84,7 +84,7 @@ public class OkHttpUtil {
                 return (T) new String(dataBytes);
             }
         } catch (IOException e) {
-            log.error("请求 {} 失败", url);
+            log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(body, JSONWriter.Feature.FieldBased));
             log.error("请求失败", e);
             return null;
         }
