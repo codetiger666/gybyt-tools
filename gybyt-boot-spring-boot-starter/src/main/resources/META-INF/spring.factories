@@ -5,4 +5,6 @@ cn.gybyt.config.properties.JwtProperties,\
 cn.gybyt.config.RedisConfig,\
 cn.gybyt.config.RequestConfig,\
 cn.gybyt.config.GybytMybatisConfig,\
-cn.gybyt.config.SpringUtilConfig
+cn.gybyt.config.SpringUtilConfig,\
+cn.gybyt.config.properties.FileUploadProperty,\
+cn.gybyt.config.FileUploadConfig

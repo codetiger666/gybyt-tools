@@ -70,6 +70,7 @@
         <gybyt.tool.version>0.0.5.SNAPSHOT</gybyt.tool.version>
         <easyexcel.version>3.3.2</easyexcel.version>
         <druid.version>1.2.16</druid.version>
+        <aws.s3.version>2.22.6</aws.s3.version>
     </properties>
 
     <dependencyManagement>
@@ -142,6 +143,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
                 <version>${druid.version}</version>
+            </dependency>
+            <!--aws s3-->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>s3</artifactId>
+                <version>${aws.s3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

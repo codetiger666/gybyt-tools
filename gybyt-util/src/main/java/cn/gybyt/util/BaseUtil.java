@@ -1,7 +1,10 @@
 package cn.gybyt.util;
 
+import lombok.NonNull;
+
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -14,6 +17,9 @@ import java.util.stream.Collectors;
  * @create: 2022/11/18 19:07
  **/
 public class BaseUtil {
+
+    private static long currentTimeMillis = 0;
+    private static final AtomicInteger KEY_INDEX = new AtomicInteger();
 
     /**
      * 解决空指针问题,为空指定默认值
@@ -118,6 +124,73 @@ public class BaseUtil {
             }
         }
         return dataList;
+    }
+
+    /**
+     * 生成随机字符串
+     *
+     * @param length 生成长度
+     */
+    public static synchronized String genKey(Integer length) {
+        if (length == null) {
+            return "";
+        }
+        if (length <= 13) {
+            return BaseUtil.genRandomString(length);
+        }
+        long current = System.currentTimeMillis();
+        if (current == currentTimeMillis) {
+            int index = KEY_INDEX.getAndIncrement();
+            String indexStr = String.valueOf(index);
+            if ((indexStr.length() + 13) > length) {
+                return BaseUtil.genRandomString(length);
+            }
+            return current + BaseUtil.suppleExtentString(index, length - 13);
+        }
+        KEY_INDEX.set(0);
+        currentTimeMillis = current;
+        return current + BaseUtil.suppleExtentString(0, length - 13);
+    }
+
+    /**
+     * 数字转字符串，补全位数
+     * @param number
+     * @param length
+     * @return
+     */
+    public static String suppleExtentString(Number number, Integer length) {
+        if (BaseUtil.isNull(number)) {
+            return "";
+        }
+        String numberStr = String.valueOf(number);
+        if (BaseUtil.isNull(length) || numberStr.length() == length) {
+            return numberStr;
+        }
+        if (numberStr.length() > length) {
+            throw new BaseException("生成长度大于原数字位数");
+        }
+        StringBuilder numberStrBuilder = new StringBuilder();
+        for (int i = 0; i < length - numberStr.length(); i++) {
+            numberStrBuilder.append("0");
+        }
+        numberStrBuilder.append(numberStr);
+        return numberStrBuilder.toString();
+    }
+
+    /**
+     * 生成随机字符串
+     * @param length
+     * @return
+     */
+    public static String genRandomString(@NonNull Integer length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder strBuilder = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(chars.length());
+            strBuilder.append(chars.charAt(index));
+        }
+        return strBuilder.toString();
     }
 
 }

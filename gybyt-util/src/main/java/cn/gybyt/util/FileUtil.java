@@ -182,9 +182,13 @@ public class FileUtil {
             }
             URL url;
             path = path.replaceAll("^classpath:", "");
+            InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+            if (inputStream != null) {
+                return inputStream;
+            }
             url = Thread.currentThread().getContextClassLoader().getResource(path);
             path = BaseUtil.isNull(url) ? path : url.getPath();
-            path = path.replaceAll("^file:", "");
+            path = path.replaceAll("^file:/", "");
             Matcher matcher = PatternPool.getPattern("(.*?\\.jar)!?(.+)").matcher(path);
             if (matcher.find()) {
                 if (matcher.groupCount() < 2) {
