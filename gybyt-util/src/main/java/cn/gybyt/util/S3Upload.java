@@ -1,24 +1,23 @@
 package cn.gybyt.util;
 
+import cn.gybyt.concurrent.NamedThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.internal.util.Mimetype;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.ByteArrayInputStream;
+import cn.gybyt.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -68,7 +67,12 @@ public class S3Upload implements FileUpload {
     /**
      * 线程池
      */
-    private final static ThreadPoolExecutor POOL = new ThreadPoolExecutor(5, 5, 60, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+    private final static ThreadPoolExecutor POOL = new ThreadPoolExecutor(5,
+            5,
+            60,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(5),
+            new NamedThreadFactory("s3上传线程池"));
 
     /**
      * 构造器
@@ -99,11 +103,13 @@ public class S3Upload implements FileUpload {
 
     /**
      * 上传文件
-     * @param inputStream
-     * @param fileName
+     * @param inputStream 输入流
+     * @param filePath 上传路径
+     * @param fileName 文件名
      * @return
      */
-    public FileInfo putFileParallel(InputStream inputStream, String filePath , String fileName) {
+    @Override
+    public FileInfo putFile(InputStream inputStream, String filePath , String fileName) {
         int partSize = 5 * 1024 * 1024;
         if (BaseUtil.isEmpty(fileName)) {
             fileName = BaseUtil.genKey(20);
@@ -130,27 +136,38 @@ public class S3Upload implements FileUpload {
         try {
             int parts = inputStream.available() / partSize + 1;
             for (int part = 1; part <= parts; part++) {
-                int finalPart = part;
                 byte[] data = new byte[partSize];
+                int finalPart = part;
                 int post = inputStream.read(data);
                 if (post == -1) {
                     break;
                 }
-                byte[] dataByte = Arrays.copyOf(data, post);
-                completableFutures.add(CompletableFuture.supplyAsync(() -> {
-                    UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                            .bucket(this.bucket)
-                            .key(uploadFileName)
-                            .uploadId(uploadId)
-                            .partNumber(finalPart)
-                            .contentLength((long) post)
-                            .build();
-                    UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest,
-                            RequestBody.fromBytes(dataByte));
-                    log.warn("{} 分片 {} 上传完成", uploadFileName, finalPart);
-                    System.out.println(uploadFileName + " 分片 " + finalPart + " 上传完成");
-                    return uploadPartResponse;
-                }));
+                while (true) {
+                    if (POOL.getQueue().remainingCapacity() > 0) {
+                        log.debug("{} 分片 {} 开始上传, 共 {} 片", uploadFileName, finalPart, parts);
+                        completableFutures.add(CompletableFuture.supplyAsync(() -> {
+                            try (
+                                InputStream partInputStream = new ByteArrayInputStream(data, 0, post)) {
+                                UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+                                        .bucket(this.bucket)
+                                        .key(uploadFileName)
+                                        .uploadId(uploadId)
+                                        .partNumber(finalPart)
+                                        .contentLength((long) post)
+                                        .build();
+                                UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest,
+                                        RequestBody.fromContentProvider(() -> partInputStream, post, Mimetype.MIMETYPE_OCTET_STREAM));
+                                log.debug("{} 分片 {} 上传完成, 共 {} 片", uploadFileName, finalPart, parts);
+                                return uploadPartResponse;
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }, POOL));
+                        break;
+                    }
+                    Thread.sleep(10);
+                }
+
             }
             CompletableFuture<Void> allCompletable = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
             allCompletable.get();
@@ -193,8 +210,7 @@ public class S3Upload implements FileUpload {
      * @param fileName
      * @return
      */
-    @Override
-    public FileInfo putFile(InputStream inputStream, String filePath , String fileName) {
+    public FileInfo putFileNoParallel(InputStream inputStream, String filePath , String fileName) {
         int partSize = 5 * 1024 * 1024;
         if (BaseUtil.isEmpty(fileName)) {
             fileName = BaseUtil.genKey(20);
