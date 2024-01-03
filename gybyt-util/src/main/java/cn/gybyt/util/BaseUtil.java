@@ -3,6 +3,8 @@ package cn.gybyt.util;
 import lombok.NonNull;
 
 import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -191,6 +193,70 @@ public class BaseUtil {
             strBuilder.append(chars.charAt(index));
         }
         return strBuilder.toString();
+    }
+
+    /**
+     * 格式化字符串
+     *
+     * @param format 待格式字符串
+     * @param args 需要填充的数据
+     * @return 格式化后的字符串
+     */
+    public static <T> String format(String format, T... args) {
+        if (BaseUtil.isEmpty(format)) {
+            return "";
+        }
+        int post = 0;
+        StringBuilder strBuilder = new StringBuilder();
+        char[] chars = format.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == '\\') {
+                if (i + 2 < chars.length && chars[i + 1] == '{' && chars[i + 2] == '}') {
+                    i += 2;
+                    strBuilder.append("{}");
+                    continue;
+                }
+            }
+            if (chars[i] == '{') {
+                if (i + 1 > chars.length - 1) {
+                    break;
+                }
+                if (i + 1 < chars.length && chars[i + 1] == '}') {
+                    strBuilder.append(args.length > 0 && post < args.length ? BaseUtil.toStr(args[post]) : "");
+                    post++;
+                    i++;
+                    continue;
+                }
+            }
+            strBuilder.append(chars[i]);
+        }
+        return strBuilder.toString();
+    }
+
+    /**
+     * 对象转字符串
+     *
+     * @param o 需要转换的对象
+     * @return 转换后的字符串
+     */
+    public static String toStr(Object o) {
+        if (BaseUtil.isEmpty(o)) {
+            return "";
+        }
+        if (o instanceof String)
+            return (String) o;
+        else if (o instanceof byte[]) {
+            return new String((byte[]) o, StandardCharsets.UTF_8);
+        } else if (o instanceof ByteBuffer) {
+            return StandardCharsets.UTF_8.decode((ByteBuffer) o).toString();
+        } else if (o instanceof Collection) {
+            StringBuilder strBuilder = new StringBuilder();
+            strBuilder.append("[ ");
+            ((Collection) o).forEach(item -> strBuilder.append(BaseUtil.toStr(item)));
+            strBuilder.append(" ]");
+            return strBuilder.toString();
+        }
+        return o.toString();
     }
 
 }
