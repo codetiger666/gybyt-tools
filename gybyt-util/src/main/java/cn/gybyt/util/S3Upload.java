@@ -69,7 +69,7 @@ public class S3Upload implements FileUpload {
      */
     private final static ThreadPoolExecutor POOL = new ThreadPoolExecutor(5,
             5,
-            60,
+            5,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(5),
             new NamedThreadFactory("s3上传线程池"));

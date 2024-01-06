@@ -1,8 +1,6 @@
 package cn.gybyt.util;
 
 import cn.gybyt.config.properties.JwtProperties;
-import cn.gybyt.util.BaseException;
-import cn.gybyt.util.BaseUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;

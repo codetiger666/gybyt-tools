@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 /**
  * request对象包装
@@ -54,10 +55,6 @@ public class GybytHttpServletRequestWrapper extends HttpServletRequestWrapper {
      */
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        // 不处理无请求体请求
-        if (super.getHeader(HttpHeaders.CONTENT_TYPE) == null) {
-            return super.getInputStream();
-        }
         // 不处理文件类型请求
         if (super.getHeader(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
             return super.getInputStream();
@@ -72,26 +69,76 @@ public class GybytHttpServletRequestWrapper extends HttpServletRequestWrapper {
         }
 
         // 新建字节输入流对象
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.body);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(Arrays.copyOf(this.body, this.body.length));
 
         // 创建新的输入流
         return new ServletInputStream() {
+
             @Override
             public boolean isFinished() {
                 return false;
             }
+
             @Override
             public boolean isReady() {
                 return false;
             }
+
             @Override
             public void setReadListener(ReadListener listener) {
 
             }
+
             @Override
             public int read() {
                 return byteArrayInputStream.read();
             }
+
+            @Override
+            public int readLine(byte[] b, int off, int len) {
+                return byteArrayInputStream.read(b, off, len);
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                return byteArrayInputStream.read(b);
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) {
+                return byteArrayInputStream.read(b, off, len);
+            }
+
+            @Override
+            public long skip(long n) {
+                return byteArrayInputStream.skip(n);
+            }
+
+            @Override
+            public int available() {
+                return byteArrayInputStream.available();
+            }
+
+            @Override
+            public void close() throws IOException {
+                byteArrayInputStream.close();
+            }
+
+            @Override
+            public synchronized void mark(int readlimit) {
+                byteArrayInputStream.mark(readlimit);
+            }
+
+            @Override
+            public synchronized void reset() {
+                byteArrayInputStream.reset();
+            }
+
+            @Override
+            public boolean markSupported() {
+                return byteArrayInputStream.markSupported();
+            }
+
         };
 
     }

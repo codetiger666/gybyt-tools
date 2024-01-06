@@ -12,10 +12,6 @@ import java.io.IOException;
  **/
 public class ByteArrayInputStream extends java.io.ByteArrayInputStream {
 
-    public ByteArrayInputStream(byte[] buf) {
-        super(buf);
-    }
-
     public ByteArrayInputStream(byte[] buf, int offset, int length) {
         super(buf, offset, length);
     }
