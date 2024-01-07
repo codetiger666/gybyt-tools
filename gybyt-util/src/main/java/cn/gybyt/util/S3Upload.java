@@ -68,11 +68,14 @@ public class S3Upload implements FileUpload {
      * 线程池
      */
     private final static ThreadPoolExecutor POOL = new ThreadPoolExecutor(5,
-            5,
+            10,
             5,
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(5),
-            new NamedThreadFactory("s3上传线程池"));
+            new NamedThreadFactory("s3上传线程池"),
+            // 默认调用线程处理超出的任务
+            new ThreadPoolExecutor.CallerRunsPolicy()
+    );
 
     /**
      * 构造器
@@ -142,32 +145,25 @@ public class S3Upload implements FileUpload {
                 if (post == -1) {
                     break;
                 }
-                while (true) {
-                    if (POOL.getQueue().remainingCapacity() > 0) {
-                        log.debug("{} 分片 {} 开始上传, 共 {} 片", uploadFileName, finalPart, parts);
-                        completableFutures.add(CompletableFuture.supplyAsync(() -> {
-                            try (
-                                InputStream partInputStream = new ByteArrayInputStream(data, 0, post)) {
-                                UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
-                                        .bucket(this.bucket)
-                                        .key(uploadFileName)
-                                        .uploadId(uploadId)
-                                        .partNumber(finalPart)
-                                        .contentLength((long) post)
-                                        .build();
-                                UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest,
-                                        RequestBody.fromContentProvider(() -> partInputStream, post, Mimetype.MIMETYPE_OCTET_STREAM));
-                                log.debug("{} 分片 {} 上传完成, 共 {} 片", uploadFileName, finalPart, parts);
-                                return uploadPartResponse;
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }, POOL));
-                        break;
+                log.info("{} 分片 {} 开始上传, 共 {} 片", uploadFileName, finalPart, parts);
+                completableFutures.add(CompletableFuture.supplyAsync(() -> {
+                    try (
+                        InputStream partInputStream = new ByteArrayInputStream(data, 0, post)) {
+                        UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
+                                .bucket(this.bucket)
+                                .key(uploadFileName)
+                                .uploadId(uploadId)
+                                .partNumber(finalPart)
+                                .contentLength((long) post)
+                                .build();
+                        UploadPartResponse uploadPartResponse = s3Client.uploadPart(uploadPartRequest,
+                                RequestBody.fromContentProvider(() -> partInputStream, post, Mimetype.MIMETYPE_OCTET_STREAM));
+                        log.info("{} 分片 {} 上传完成, 共 {} 片", uploadFileName, finalPart, parts);
+                        return uploadPartResponse;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                    Thread.sleep(10);
-                }
-
+                }, POOL));
             }
             CompletableFuture<Void> allCompletable = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]));
             allCompletable.get();
@@ -375,6 +371,7 @@ public class S3Upload implements FileUpload {
                     .endpointOverride(URI.create(this.endpoint))
                     .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(this.accessKey, this.secretKey)))
                     .build();
+            log.info("s3Upload初始化成功");
             return s3Upload;
         }
     }
