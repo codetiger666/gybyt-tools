@@ -2,6 +2,7 @@ package cn.gybyt.dynamic;
 
 import cn.gybyt.config.properties.GybytDynamicProperties;
 import cn.gybyt.config.properties.GybytProperties;
+import cn.gybyt.util.BaseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.AbstractDataSource;
 
@@ -21,11 +22,18 @@ import java.util.Map;
 @Slf4j
 public class GybytDynamicDataSourceRoute extends AbstractDataSource {
 
-    private Map<String, DataSource> targetDataSources;
-    private GybytDynamicProperties gybytDynamicProperties;
+    /**
+     * 目标数据源
+     */
+    private final Map<String, DataSource> targetDataSources;
+    /**
+     * 动态数据源配置
+     */
+    private final GybytDynamicProperties gybytDynamicProperties;
 
     /**
      * 返回需要使用的数据源的key，将会按照这个KEY从Map获取对应的数据源（切换）
+     *
      * @return
      */
     protected String determineCurrentLookupKey() {
@@ -42,9 +50,14 @@ public class GybytDynamicDataSourceRoute extends AbstractDataSource {
     }
 
     public DataSource getDataSource() {
-        String dataSourceKey = this.determineCurrentLookupKey() == null ?  gybytDynamicProperties.getDynamicBeanNamePrefix() + gybytDynamicProperties.getDynamicMasterDataSource(): this.determineCurrentLookupKey();
+        String dataSourceKey = BaseUtil.isEmpty(this.determineCurrentLookupKey()) ? gybytDynamicProperties.getDynamicBeanNamePrefix() + gybytDynamicProperties.getDynamicMasterDataSource() : this.determineCurrentLookupKey();
+        DataSource dataSource = targetDataSources.get(dataSourceKey);
+        if (BaseUtil.isNull(dataSource)) {
+            dataSourceKey = gybytDynamicProperties.getDynamicBeanNamePrefix() + gybytDynamicProperties.getDynamicMasterDataSource();
+            dataSource = targetDataSources.get(dataSourceKey);
+        }
         log.debug("使用数据源{}", dataSourceKey.replace(gybytDynamicProperties.getDynamicBeanNamePrefix(), ""));
-        return targetDataSources.get(dataSourceKey);
+        return dataSource;
     }
 
 

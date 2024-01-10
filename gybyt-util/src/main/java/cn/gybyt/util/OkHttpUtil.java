@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
+import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
@@ -44,7 +45,10 @@ public class OkHttpUtil {
      * @return
      * @param <T>
      */
-    public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, Method method, Media media, TypeUtil<T> typeUtil) {
+    public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, @NotNull Method method, Media media, TypeUtil<T> typeUtil) {
+        if (method == null) {
+            throw new BaseException("请设置请求类型");
+        }
         Request.Builder requestBuilder = new Request.Builder();
         RequestBody body = null;
         if (media == Media.FORM && (BaseUtil.isNotNull(data) || BaseUtil.isNotEmpty(paramMap))) {
@@ -84,7 +88,11 @@ public class OkHttpUtil {
                 return (T) new String(dataBytes);
             }
         } catch (IOException e) {
-            log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(body, JSONWriter.Feature.FieldBased));
+            if ((media == null || media == Media.JSON) && BaseUtil.isNotNull(data)) {
+                log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
+            } else {
+                log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(body, JSONWriter.Feature.FieldBased));
+            }
             log.error("请求失败", e);
             return null;
         }

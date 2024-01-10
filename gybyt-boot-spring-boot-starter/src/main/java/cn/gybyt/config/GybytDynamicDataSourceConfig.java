@@ -8,12 +8,12 @@ import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.ReflectUtil;
 import cn.gybyt.util.SpringUtil;
 import com.alibaba.druid.pool.DruidDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -40,6 +40,7 @@ import java.util.Set;
  * @create: 2023/9/2 16:13
  **/
 @Configuration
+@Slf4j
 public class GybytDynamicDataSourceConfig {
 
     @Resource
@@ -49,7 +50,7 @@ public class GybytDynamicDataSourceConfig {
     /**
      * 目标数据源
      */
-    private Map<String, DataSource> targetDataSources = new HashMap<>();
+    private final Map<String, DataSource> targetDataSources = new HashMap<>();
 
     @PostConstruct
     public void setGybytDynamicDataSource() {
@@ -73,6 +74,7 @@ public class GybytDynamicDataSourceConfig {
                 }
                 String beanName = gybytDynamicProperties.getDynamicBeanNamePrefix() + k;
                 targetDataSources.put(beanName, druidDataSource);
+                log.info("初始化数据源 {} 成功", k);
                 return;
             }
             SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
@@ -82,6 +84,7 @@ public class GybytDynamicDataSourceConfig {
             dataSource.setUrl(v.getUrl());
             String beanName = gybytDynamicProperties.getDynamicBeanNamePrefix() + k;
             targetDataSources.put(beanName, dataSource);
+            log.info("初始化数据源 {} 成功", k);
         });
     }
 
@@ -91,7 +94,6 @@ public class GybytDynamicDataSourceConfig {
         return new GybytDynamicDataSourceRoute(targetDataSources, gybytDynamicProperties);
     }
 
-    @ConditionalOnMissingBean
     @ConditionalOnClass({SqlSessionFactory.class, MybatisProperties.class})
     @Primary
     @Bean
@@ -99,7 +101,11 @@ public class GybytDynamicDataSourceConfig {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(gybytDynamicDataSourceRoute);
         MybatisProperties mybatisProperties = SpringUtil.getBean(MybatisProperties.class);
-        sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(gybytMybatisProperties.getMapperPath()));
+        try {
+            sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(gybytMybatisProperties.getMapperPath()));
+        } catch (Exception e) {
+            sqlSessionFactoryBean.setMapperLocations();
+        }
         if (BaseUtil.isNotEmpty(mybatisProperties.getTypeAliasesPackage())) {
             sqlSessionFactoryBean.setTypeAliasesPackage(mybatisProperties.getTypeAliasesPackage());
         }
@@ -111,7 +117,6 @@ public class GybytDynamicDataSourceConfig {
     /**
      * 重写事务管理器，管理动态数据源
      */
-    @ConditionalOnMissingBean
     @ConditionalOnClass(Transactional.class)
     @Primary
     @Bean

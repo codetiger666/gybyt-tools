@@ -1,5 +1,7 @@
 package cn.gybyt.dynamic;
 
+import cn.gybyt.util.BaseUtil;
+
 /**
  * 动态数据源
  *
@@ -20,7 +22,11 @@ public class GybytDataSourceHolder {
 
     //获取数据源
     public static String getDataSource() {
-        return dataSources.get();
+        String dataSourceKey = dataSources.get();
+        if (BaseUtil.isEmpty(dataSourceKey)) {
+            dataSourceKey = "";
+        }
+        return dataSourceKey;
     }
 
     //清除数据源

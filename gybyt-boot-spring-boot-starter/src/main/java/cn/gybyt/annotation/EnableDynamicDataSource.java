@@ -3,7 +3,7 @@ package cn.gybyt.annotation;
 import cn.gybyt.config.GybytDynamicDataSourceConfig;
 import cn.gybyt.config.properties.GybytDynamicProperties;
 import cn.gybyt.dynamic.GybytDataSourceAspect;
-import cn.gybyt.dynamic.GybytDynamicDataSourceRoute;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -21,6 +21,7 @@ import java.lang.annotation.Target;
  **/
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@EnableAspectJAutoProxy
 @Import({GybytDynamicDataSourceConfig.class, GybytDynamicProperties.class, GybytDataSourceAspect.class})
 public @interface EnableDynamicDataSource {
 }

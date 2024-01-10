@@ -2,6 +2,8 @@ package cn.gybyt.dynamic;
 
 import cn.gybyt.annotation.SwitchDataSource;
 import cn.gybyt.config.properties.GybytDynamicProperties;
+import cn.gybyt.util.BaseException;
+import cn.gybyt.util.BaseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,6 +37,7 @@ public class GybytDataSourceAspect {
 
     @Resource
     private GybytDynamicProperties gybytDynamicProperties;
+    private final Map<String, String> DATASOURCE_KEY_MAP = new ConcurrentHashMap<>();
 
     /**
      * 在方法执行之前切换到指定的数据源
@@ -56,46 +60,28 @@ public class GybytDataSourceAspect {
                 }
             }
         }
-        String key = gybytDynamicProperties.getDynamicBeanNamePrefix() + switchSource.value();
-        GybytDataSourceHolder.setDataSource(key);
+        if (switchSource == null) {
+            switchSource = (SwitchDataSource) joinPoint.getSignature().getDeclaringType().getAnnotation(SwitchDataSource.class);
+        }
+        if (switchSource == null) {
+            throw new BaseException("获取动态数据源注解失败");
+        }
+        DATASOURCE_KEY_MAP.put(this.getKeyName(joinPoint), GybytDataSourceHolder.getDataSource());
+        GybytDataSourceHolder.setDataSource(gybytDynamicProperties.getDynamicBeanNamePrefix() + switchSource.value());
     }
 
-    /**
-     * 处理服务
-     * @param joinPoint
-     */
-    @Before("@within(org.springframework.stereotype.Service)")
-    public void beforeService(JoinPoint joinPoint) {
-        // 获取类上的注解
-        SwitchDataSource switchDataSource = joinPoint.getTarget().getClass().getAnnotation(SwitchDataSource.class);
-        if (switchDataSource == null) {
-            // 获取接口上的注解
-            for (Class<?> cls : joinPoint.getClass().getInterfaces()) {
-                switchDataSource = cls.getAnnotation(SwitchDataSource.class);
-                if (switchDataSource != null) {
-                    break;
-                }
-            }
-        }
-        if (switchDataSource == null) {
-            GybytDataSourceHolder.clearDataSource();
-        }
-    }
 
     /**
      * 方法执行之后清除掉ThreadLocal中存储的KEY，这样动态数据源会使用默认的数据源
      */
     @After(value = "@annotation(cn.gybyt.annotation.SwitchDataSource) || @within(cn.gybyt.annotation.SwitchDataSource)")
     public void afterSwitchDataSource(JoinPoint joinPoint) {
-        GybytDataSourceHolder.clearDataSource();
-    }
-
-    /**
-     * 清理服务配置
-     */
-    @After("@within(org.springframework.stereotype.Service)")
-    public void afterService(JoinPoint joinPoint) {
-        GybytDataSourceHolder.clearDataSource();
+        String datasourceKey = DATASOURCE_KEY_MAP.get(this.getKeyName(joinPoint));
+        if (BaseUtil.isEmpty(datasourceKey)) {
+            GybytDataSourceHolder.clearDataSource();
+            return;
+        }
+        GybytDataSourceHolder.setDataSource(datasourceKey);
     }
 
     /**

@@ -6,8 +6,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -21,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * spring 工具类
@@ -340,44 +337,7 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
      * @return
      */
     public static String getProperty(String key) {
-        Properties properties = System.getProperties();
-        return properties.getProperty(key);
+        return getContext().getEnvironment().getProperty(key);
     }
 
-    /**
-     * 获取环境变量
-     *
-     * @param key
-     * @return
-     */
-    public static Object getProperty(Object key) {
-        Properties properties = System.getProperties();
-        return properties.get(key);
-    }
-
-    /**
-     * 获取所有环境变量
-     *
-     * @return
-     */
-    public static Map<Object, Object> getPropertiesMap() {
-        Properties properties = System.getProperties();
-        Set<Object> keySet = properties.keySet();
-        ConcurrentHashMap<Object, Object> propertiesMap = new ConcurrentHashMap<>();
-        keySet.forEach(key -> propertiesMap.put(key, properties.get(key)));
-        return propertiesMap;
-    }
-
-    /**
-     * 获取环境变量集合，传入变量名称set集合
-     *
-     * @param keySet
-     * @return
-     */
-    public static Map<Object, Object> getPropertiesMap(Set<Object> keySet) {
-        Properties properties = System.getProperties();
-        ConcurrentHashMap<Object, Object> propertiesMap = new ConcurrentHashMap<>();
-        keySet.forEach(key -> propertiesMap.put(key, properties.get(key)));
-        return propertiesMap;
-    }
 }
