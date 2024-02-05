@@ -32,6 +32,7 @@ public class BaseUtil {
      * @param <R>
      * @return
      */
+    @SafeVarargs
     public static <T, R> R executeByFunction(T t, Function<? super T, ? extends R> function, R... defaultResult) {
         if (BaseUtil.isNotNull(t)) {
             return function.apply(t);
@@ -115,6 +116,7 @@ public class BaseUtil {
      * @return
      * @param <T>
      */
+    @SuppressWarnings("unchecked")
     public static <T> List<T> toList(CharSequence str, String regex) {
         List<T> dataList = new ArrayList<>();
         if (isEmpty(str)) {
@@ -202,6 +204,7 @@ public class BaseUtil {
      * @param args 需要填充的数据
      * @return 格式化后的字符串
      */
+    @SafeVarargs
     public static <T> String format(String format, T... args) {
         if (BaseUtil.isEmpty(format)) {
             return "";
@@ -252,7 +255,7 @@ public class BaseUtil {
         } else if (o instanceof Collection) {
             StringBuilder strBuilder = new StringBuilder();
             strBuilder.append("[ ");
-            ((Collection) o).forEach(item -> strBuilder.append(BaseUtil.toStr(item)));
+            ((Collection<?>) o).forEach(item -> strBuilder.append(BaseUtil.toStr(item)));
             strBuilder.append(" ]");
             return strBuilder.toString();
         }

@@ -4,11 +4,12 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
 import com.alibaba.fastjson2.JSONWriter;
-import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -27,8 +28,10 @@ public class OkHttpUtil {
 
     static {
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-        Long timeOut = System.getProperty("gybyt.okhttp.timeOut") == null ? 5000 : Long.parseLong(System.getProperty("gybyt.okhttp.timeOut"));
-        int maxCon = System.getProperty("gybyt.okhttp.maxCon") == null ? 10 : Integer.parseInt(System.getProperty("gybyt.okhttp.maxCon"));
+        Long timeOut = System.getProperty("gybyt.okhttp.timeOut") == null ? 5000 : Long.parseLong(
+                System.getProperty("gybyt.okhttp.timeOut"));
+        int maxCon = System.getProperty("gybyt.okhttp.maxCon") == null ? 10 : Integer.parseInt(
+                System.getProperty("gybyt.okhttp.maxCon"));
         ConnectionPool connectionPool = new ConnectionPool(maxCon, timeOut, TimeUnit.MILLISECONDS);
         clientBuilder.callTimeout(timeOut, TimeUnit.MILLISECONDS);
         clientBuilder.connectionPool(connectionPool);
@@ -37,21 +40,43 @@ public class OkHttpUtil {
 
     /**
      * 发送请求
+     *
      * @param url
      * @param paramMap
      * @param headerMap
      * @param data
      * @param typeUtil
-     * @return
      * @param <T>
+     * @return
      */
-    public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, @NotNull Method method, Media media, TypeUtil<T> typeUtil) {
+    @SuppressWarnings("unchecked")
+    public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, Method method, Media media, TypeUtil<T> typeUtil) {
         if (method == null) {
             throw new BaseException("请设置请求类型");
         }
+        if (media == null) {
+            media = Media.JSON;
+        }
         Request.Builder requestBuilder = new Request.Builder();
         RequestBody body = null;
-        if (media == Media.FORM && (BaseUtil.isNotNull(data) || BaseUtil.isNotEmpty(paramMap))) {
+        if (media == Media.JSON) {
+            if (BaseUtil.isNotEmpty(paramMap)) {
+                StringBuilder urlBuilder = new StringBuilder();
+                urlBuilder.append(url);
+                urlBuilder.append("?");
+                paramMap.forEach((k, v) -> {
+                    urlBuilder.append(k);
+                    urlBuilder.append("=");
+                    urlBuilder.append(v);
+                    urlBuilder.append("&");
+                });
+                url = urlBuilder.toString()
+                                .replaceAll("&$", "");
+            }
+            body = RequestBody.create(MediaType.parse("application/json"),
+                                      JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
+        }
+        if (media == Media.X_FROM) {
             JSONObject jsonObject = JSONObject.from(data, JSONWriter.Feature.FieldBased);
             FormBody.Builder formBodyBuilder = new FormBody.Builder();
             jsonObject.forEach((k, v) -> formBodyBuilder.add(k, String.valueOf(v)));
@@ -60,26 +85,33 @@ public class OkHttpUtil {
             }
             body = formBodyBuilder.build();
         }
-        if ((media == null || media == Media.JSON) && BaseUtil.isNotNull(data)) {
-            body = RequestBody.create(MediaType.parse("application/json"), JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
-        }
-        if (BaseUtil.isNotEmpty(paramMap) && media != Media.FORM) {
-            StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append(url);
-            urlBuilder.append("?");
-            paramMap.forEach((k, v) -> {
-                urlBuilder.append(k);
-                urlBuilder.append("=");
-                urlBuilder.append(v);
-                urlBuilder.append("&");
-            });
-            url = urlBuilder.toString().replaceAll("&$", "");
+        if (media == Media.FORM) {
+            JSONObject jsonObject = JSONObject.from(data, JSONWriter.Feature.FieldBased);
+            MultipartBody.Builder formBodyBuilder = new MultipartBody.Builder();
+            jsonObject.forEach((k, v) -> formBodyBuilder.addFormDataPart(k, String.valueOf(v)));
+            if (BaseUtil.isNotEmpty(paramMap)) {
+                paramMap.forEach((k, v) -> {
+                    if (v instanceof File) {
+                        formBodyBuilder.addFormDataPart(k, ((File) v).getName(),
+                                                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                                                                           (File) v));
+                        return;
+                    }
+                    formBodyBuilder.addFormDataPart(k, String.valueOf(v));
+                });
+            }
+            body = formBodyBuilder.build();
         }
         requestBuilder.url(url)
-                .method(method.name(), body);
+                      .method(method.name(), body);
+        if (BaseUtil.isNotEmpty(headerMap)) {
+            headerMap.forEach(requestBuilder::addHeader);
+        }
         try {
-            Response response = client.newCall(requestBuilder.build()).execute();
-            byte[] dataBytes = response.body().bytes();
+            Response response = client.newCall(requestBuilder.build())
+                                      .execute();
+            byte[] dataBytes = response.body()
+                                       .bytes();
             try {
                 log.debug("请求 {} 成功", url);
                 log.debug(new String(dataBytes));
@@ -88,10 +120,12 @@ public class OkHttpUtil {
                 return (T) new String(dataBytes);
             }
         } catch (IOException e) {
-            if ((media == null || media == Media.JSON) && BaseUtil.isNotNull(data)) {
+            if (media == Media.JSON) {
                 log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
             } else {
-                log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(body, JSONWriter.Feature.FieldBased));
+                Map<String, Object> dataMap = new HashMap<>(paramMap);
+                dataMap.putAll(JSON.parseObject(JSON.toJSONString(data, JSONWriter.Feature.FieldBased)));
+                log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(dataMap, JSONWriter.Feature.FieldBased));
             }
             log.error("请求失败", e);
             return null;
@@ -112,7 +146,8 @@ public class OkHttpUtil {
 
     public enum Media {
         JSON,
-        FORM
+        FORM,
+        X_FROM
     }
 
 }

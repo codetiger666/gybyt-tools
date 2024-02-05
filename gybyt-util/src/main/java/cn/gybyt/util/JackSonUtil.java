@@ -52,6 +52,7 @@ public class JackSonUtil {
      * @param className
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static <T> T toObject(String json, String className){
         try {
             Class<T> aClass = (Class<T>) Class.forName(className);

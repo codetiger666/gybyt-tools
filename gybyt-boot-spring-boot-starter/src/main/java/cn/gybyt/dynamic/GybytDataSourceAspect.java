@@ -43,6 +43,7 @@ public class GybytDataSourceAspect {
      * 在方法执行之前切换到指定的数据源
      * @param joinPoint
      */
+    @SuppressWarnings("unchecked")
     @Before(value = "@annotation(cn.gybyt.annotation.SwitchDataSource) || @within(cn.gybyt.annotation.SwitchDataSource)")
     public void beforeSwitchDataSource(JoinPoint joinPoint) {
         // 因为是对注解进行切面，所以这边无需做过多判定，直接获取注解的值，进行环绕，将数据源设置成远方，然后结束后，清楚当前线程数据源

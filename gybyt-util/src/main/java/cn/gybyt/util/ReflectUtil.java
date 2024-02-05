@@ -20,6 +20,7 @@ import java.util.Objects;
  * @create: 2023/3/4 21:16
  **/
 @Slf4j
+@SuppressWarnings("unchecked")
 public class ReflectUtil {
 
     /**

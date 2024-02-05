@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
  * @author: codetiger
  * @create: 2022/11/10 21:31
  **/
+@SuppressWarnings("unchecked")
 public abstract class TypeUtil<T> {
 
     private final Type type;

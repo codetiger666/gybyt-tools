@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author: codetiger
  * @create: 2022/11/9 19:43
  **/
+@SuppressWarnings("unchecked")
 public class CacheUtil {
 
     private static final RedisTemplate redisTemplate;

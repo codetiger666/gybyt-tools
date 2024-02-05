@@ -28,6 +28,7 @@ import java.util.*;
  * @author: codetiger
  * @create: 2022/11/9 19:47
  **/
+@SuppressWarnings("unchecked")
 @Component("gybytSpringUtil")
 public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextAware {
 
@@ -207,17 +208,17 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
             return "";
         }
         // 新建存储对象
-        StringBuffer bodyBuffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         if (request.getContentLength() != -1) {
             try (BufferedReader reader = request.getReader()) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    bodyBuffer.append(line);
+                    builder.append(line);
                 }
             } catch (IOException e) {
             }
         }
-        return bodyBuffer.toString();
+        return builder.toString();
     }
 
     /**

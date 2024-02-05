@@ -60,13 +60,13 @@ public class BaseResponse<T> {
     public BaseResponse() {
     }
 
-    public static <T> BaseResponse success(T content) {
-        return new BaseResponse(HttpStatusEnum.SUCCESS.value(), HttpStatusEnum.SUCCESS.reason(), content);
+    public static <T> BaseResponse<T> success(T content) {
+        return new BaseResponse<>(HttpStatusEnum.SUCCESS.value(), HttpStatusEnum.SUCCESS.reason(), content);
     }
 
 
-    public static BaseResponse failure(Integer code, String reason) {
-        return new BaseResponse(code, reason);
+    public static BaseResponse<String> failure(Integer code, String reason) {
+        return new BaseResponse<>(code, reason);
     }
 
 
