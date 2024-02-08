@@ -41,6 +41,7 @@ public class TaskManage {
 
     /**
      * 添加任务
+     *
      * @param taskExecute 任务
      * @return
      */
@@ -59,8 +60,9 @@ public class TaskManage {
 
     /**
      * 更新任务
+     *
      * @param taskName 任务名称
-     * @param cron cron表达式
+     * @param cron     cron表达式
      */
     public Boolean updateTask(String taskName, String cron) {
         TaskManage.checkCron(cron);
@@ -71,23 +73,17 @@ public class TaskManage {
         if (taskExecute == null) {
             throw new BaseException(BaseUtil.format("{}, 任务不存在", taskName));
         }
+        TaskExecute newTask = TaskManage.genTaskExecute(taskName, cron, taskExecute.getClass()
+                                                                                   .getName());
+        newTask.execute(this.executorPool);
         taskExecute.setCancel(true);
-        TASKS.remove(taskName);
-        try {
-            Constructor<? extends TaskExecute> constructor = taskExecute.getClass()
-                                                                        .getConstructor(String.class, String.class);
-            taskExecute = constructor.newInstance(cron, taskName);
-            taskExecute.execute(this.executorPool);
-            TASKS.put(taskName, taskExecute);
-            return true;
-        } catch (Exception e) {
-            log.error("更新任务失败", e);
-            return false;
-        }
+        TASKS.put(taskName, newTask);
+        return true;
     }
 
     /**
      * 任务列表
+     *
      * @param taskName 任务列表
      * @return
      */
@@ -101,7 +97,9 @@ public class TaskManage {
             dataMap.put("taskName", v.getTaskName());
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             dataMap.put("nextDate", dateFormat.format(v.getNextDate()));
-            dataMap.put("class", v.getClass().toString().replace("class: ", ""));
+            dataMap.put("class", v.getClass()
+                                  .toString()
+                                  .replace("class: ", ""));
             dataList.add(dataMap);
         });
         return dataList;
@@ -109,6 +107,7 @@ public class TaskManage {
 
     /**
      * 删除任务
+     *
      * @param taskName 任务名称
      * @return
      */
@@ -126,7 +125,28 @@ public class TaskManage {
     }
 
     /**
+     * 生成任务执行对象
+     *
+     * @param taskName  任务名称
+     * @param cron      cron表达式
+     * @param className 类全限定名
+     * @return 执行对象实例
+     */
+    public static TaskExecute genTaskExecute(String taskName, String cron, String className) {
+        try {
+            Class<?> taskExecuteClass = Class.forName(className);
+            Constructor<?> constructor = taskExecuteClass
+                    .getConstructor(String.class, String.class);
+            return (TaskExecute) constructor.newInstance(cron, taskName);
+        } catch (Exception e) {
+            log.error("生成任务执行对象失败", e);
+            throw new BaseException("生成任务执行对象失败");
+        }
+    }
+
+    /**
      * 校验cron表达式
+     *
      * @param cron
      */
     public static void checkCron(String cron) {

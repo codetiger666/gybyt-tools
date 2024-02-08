@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * okhttp工具类
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpUtil {
 
     private final static OkHttpClient client;
+    private final static Pattern URL_PARAMPATTERN = Pattern.compile("^.*?\\?(?:[\\w\\-\\\\.%]*=[\\w\\-\\\\.%]*)+$");
 
     static {
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
@@ -63,7 +65,12 @@ public class OkHttpUtil {
             if (BaseUtil.isNotEmpty(paramMap)) {
                 StringBuilder urlBuilder = new StringBuilder();
                 urlBuilder.append(url);
-                urlBuilder.append("?");
+                if (OkHttpUtil.URL_PARAMPATTERN.matcher(url)
+                                               .find()) {
+                    urlBuilder.append("&");
+                } else {
+                    urlBuilder.append("?");
+                }
                 paramMap.forEach((k, v) -> {
                     urlBuilder.append(k);
                     urlBuilder.append("=");
@@ -100,7 +107,13 @@ public class OkHttpUtil {
                     formBodyBuilder.addFormDataPart(k, String.valueOf(v));
                 });
             }
-            body = formBodyBuilder.build();
+            try {
+                body = formBodyBuilder.build();
+            } catch (IllegalStateException e) {
+                log.debug("请求体构建失败", e);
+                body = formBodyBuilder.addFormDataPart("", "").build();
+            }
+
         }
         requestBuilder.url(url)
                       .method(method.name(), body);
@@ -147,7 +160,8 @@ public class OkHttpUtil {
     public enum Media {
         JSON,
         FORM,
-        X_FROM
+        X_FROM,
+        NONE
     }
 
 }
