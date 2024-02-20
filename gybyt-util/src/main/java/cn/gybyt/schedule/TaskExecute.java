@@ -53,7 +53,7 @@ public abstract class TaskExecute implements Runnable {
     /**
      * 执行
      * @param executorPool 线程池
-     * @return
+     * @return 任务
      */
     public TaskExecute execute(ScheduledExecutorService executorPool) {
         this.executorPool = executorPool;

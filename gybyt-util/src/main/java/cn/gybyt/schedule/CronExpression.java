@@ -58,27 +58,27 @@ public class CronExpression {
         Calendar calendar = new GregorianCalendar();
         calendar.setTimeZone(this.timeZone);
         calendar.setTime(date);
-        calendar.set(14, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         long originalTimestamp = calendar.getTimeInMillis();
-        this.doNext(calendar, calendar.get(1));
+        this.doNext(calendar, calendar.get(Calendar.YEAR));
         if (calendar.getTimeInMillis() == originalTimestamp) {
-            calendar.add(13, 1);
-            this.doNext(calendar, calendar.get(1));
+            calendar.add(Calendar.SECOND, 1);
+            this.doNext(calendar, calendar.get(Calendar.YEAR));
         }
 
         return calendar.getTime();
     }
 
     private void doNext(Calendar calendar, int dot) {
-        List<Integer> resets = new ArrayList();
-        int second = calendar.get(13);
+        List<Integer> resets = new ArrayList<>();
+        int second = calendar.get(Calendar.SECOND);
         List<Integer> emptyList = Collections.emptyList();
         int updateSecond = this.findNext(this.seconds, second, calendar, 13, 12, emptyList);
         if (second == updateSecond) {
             resets.add(13);
         }
 
-        int minute = calendar.get(12);
+        int minute = calendar.get(Calendar.MINUTE);
         int updateMinute = this.findNext(this.minutes, minute, calendar, 12, 11, resets);
         if (minute == updateMinute) {
             resets.add(12);
@@ -86,7 +86,7 @@ public class CronExpression {
             this.doNext(calendar, dot);
         }
 
-        int hour = calendar.get(11);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int updateHour = this.findNext(this.hours, hour, calendar, 11, 7, resets);
         if (hour == updateHour) {
             resets.add(11);
@@ -94,8 +94,8 @@ public class CronExpression {
             this.doNext(calendar, dot);
         }
 
-        int dayOfWeek = calendar.get(7);
-        int dayOfMonth = calendar.get(5);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        int dayOfMonth = calendar.get(Calendar.DATE);
         int updateDayOfMonth = this.findNextDay(calendar, this.daysOfMonth, dayOfMonth, this.daysOfWeek, dayOfWeek,
                                                 resets);
         if (dayOfMonth == updateDayOfMonth) {
@@ -104,10 +104,10 @@ public class CronExpression {
             this.doNext(calendar, dot);
         }
 
-        int month = calendar.get(2);
+        int month = calendar.get(Calendar.MONTH);
         int updateMonth = this.findNext(this.months, month, calendar, 2, 1, resets);
         if (month != updateMonth) {
-            if (calendar.get(1) - dot > 4) {
+            if (calendar.get(Calendar.YEAR) - dot > 4) {
                 throw new IllegalArgumentException(
                         "Invalid cron expression \"" + this.expression + "\" led to runaway search for next trigger");
             }
@@ -122,9 +122,9 @@ public class CronExpression {
         int max = 366;
 
         while ((!daysOfMonth.get(dayOfMonth) || !daysOfWeek.get(dayOfWeek - 1)) && count++ < max) {
-            calendar.add(5, 1);
-            dayOfMonth = calendar.get(5);
-            dayOfWeek = calendar.get(7);
+            calendar.add(Calendar.DATE, 1);
+            dayOfMonth = calendar.get(Calendar.DATE);
+            dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             this.reset(calendar, resets);
         }
 
@@ -251,11 +251,9 @@ public class CronExpression {
 
     private void setNumberHits(BitSet bits, String value, int min, int max) {
         List<String> fields = BaseUtil.toList(value, ",");
-        List<String> var6 = fields;
         int var7 = fields.size();
 
-        for (int var8 = 0; var8 < var7; ++var8) {
-            String field = var6.get(var8);
+        for (String field : fields) {
             if (!field.contains("/")) {
                 int[] range = this.getRange(field, min, max);
                 bits.set(range[0], range[1] + 1);

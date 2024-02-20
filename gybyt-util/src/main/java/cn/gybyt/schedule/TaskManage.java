@@ -147,7 +147,7 @@ public class TaskManage {
     /**
      * 校验cron表达式
      *
-     * @param cron
+     * @param cron cron表达式
      */
     public static void checkCron(String cron) {
         if (BaseUtil.isEmpty(cron)) {

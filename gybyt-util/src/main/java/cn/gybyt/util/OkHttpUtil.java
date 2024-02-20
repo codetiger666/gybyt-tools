@@ -43,19 +43,21 @@ public class OkHttpUtil {
     /**
      * 发送请求
      *
-     * @param url
-     * @param paramMap
-     * @param headerMap
-     * @param data
-     * @param typeUtil
-     * @param <T>
-     * @return
+     * @param url 请求地址
+     * @param paramMap 请求参数
+     * @param headerMap 请求头
+     * @param data 请求体
+     * @param typeUtil 返回类型
+     * @param <T> 返回类型泛型
+     * @return 返回结果
      */
     @SuppressWarnings("unchecked")
     public static <T> T fetch(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, Method method, Media media, TypeUtil<T> typeUtil) {
+        // 默认GET请求
         if (method == null) {
-            throw new BaseException("请设置请求类型");
+            method = Method.GET;
         }
+        // 默认JSON请求
         if (media == null) {
             media = Media.JSON;
         }

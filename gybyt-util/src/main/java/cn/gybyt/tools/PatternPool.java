@@ -22,7 +22,7 @@ public class PatternPool {
 
     /**
      * 获取匹配对象
-     * @param regex
+     * @param regex 正则表达式
      * @return
      */
     public static Pattern getPattern(String regex) {
@@ -42,7 +42,7 @@ public class PatternPool {
 
     /**
      * 删除Pattern对象
-     * @param regex
+     * @param regex 正则表达式
      * @return
      */
     public static Pattern remove(String regex) {
