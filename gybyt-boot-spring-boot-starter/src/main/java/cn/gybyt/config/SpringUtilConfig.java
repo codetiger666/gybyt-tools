@@ -20,5 +20,4 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnWebApplication
 public class SpringUtilConfig {
 
-
 }

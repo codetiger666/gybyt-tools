@@ -6,6 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * jwt变量提示
  *
@@ -45,6 +48,11 @@ public class JwtProperties {
      */
     private String keyPrefix = "";
 
+    /**
+     * 请求白名单
+     */
+    private List<String> whiteList = new ArrayList<>();
+
     public String getHeader() {
         return header;
     }
@@ -83,5 +91,13 @@ public class JwtProperties {
 
     public void setKeyPrefix(String keyPrefix) {
         this.keyPrefix = keyPrefix;
+    }
+
+    public List<String> getWhiteList() {
+        return whiteList;
+    }
+
+    public void setWhiteList(List<String> whiteList) {
+        this.whiteList = whiteList;
     }
 }

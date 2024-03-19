@@ -43,12 +43,12 @@ public class OkHttpUtil {
     /**
      * 发送请求
      *
-     * @param url 请求地址
-     * @param paramMap 请求参数
+     * @param url       请求地址
+     * @param paramMap  请求参数
      * @param headerMap 请求头
-     * @param data 请求体
-     * @param typeUtil 返回类型
-     * @param <T> 返回类型泛型
+     * @param data      请求体
+     * @param typeUtil  返回类型
+     * @param <T>       返回类型泛型
      * @return 返回结果
      */
     @SuppressWarnings("unchecked")
@@ -113,9 +113,9 @@ public class OkHttpUtil {
                 body = formBodyBuilder.build();
             } catch (IllegalStateException e) {
                 log.debug("请求体构建失败", e);
-                body = formBodyBuilder.addFormDataPart("", "").build();
+                body = formBodyBuilder.addFormDataPart("", "")
+                                      .build();
             }
-
         }
         requestBuilder.url(url)
                       .method(method.name(), body);
@@ -123,10 +123,17 @@ public class OkHttpUtil {
             headerMap.forEach(requestBuilder::addHeader);
         }
         try {
-            Response response = client.newCall(requestBuilder.build())
-                                      .execute();
-            byte[] dataBytes = response.body()
-                                       .bytes();
+            ResponseBody responseBody = client.newCall(requestBuilder.build())
+                                              .execute()
+                                              .body();
+            if (responseBody == null) {
+                return null;
+            }
+            if (typeUtil.getType().getTypeName().equals("java.io.InputStream")) {
+                return (T) responseBody.byteStream();
+            }
+            byte[] dataBytes = responseBody
+                    .bytes();
             try {
                 log.debug("请求 {} 成功", url);
                 log.debug(new String(dataBytes));
