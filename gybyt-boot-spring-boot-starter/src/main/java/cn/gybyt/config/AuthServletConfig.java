@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.DispatcherType;
-
 /**
  * 请求配置
  *
