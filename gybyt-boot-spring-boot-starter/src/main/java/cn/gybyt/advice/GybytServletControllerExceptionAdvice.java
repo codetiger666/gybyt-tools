@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  **/
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class GybytControllerExceptionAdvice {
+public class GybytServletControllerExceptionAdvice {
 
-    private final Logger log = LoggerFactory.getLogger(GybytControllerExceptionAdvice.class);
+    private final Logger log = LoggerFactory.getLogger(GybytServletControllerExceptionAdvice.class);
 
     /**
      * 处理web全局异常

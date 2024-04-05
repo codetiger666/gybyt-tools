@@ -1,6 +1,9 @@
 package cn.gybyt.advice;
 
-import cn.gybyt.util.*;
+import cn.gybyt.util.BaseException;
+import cn.gybyt.util.BaseResponse;
+import cn.gybyt.util.HttpStatusEnum;
+import cn.gybyt.util.LoggerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -24,9 +27,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  **/
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class GybytServletControllerExceptionAdvice {
+public class GybytFluxControllerExceptionAdvice {
 
-    private final Logger log = LoggerFactory.getLogger(GybytServletControllerExceptionAdvice.class);
+    private final Logger log = LoggerFactory.getLogger(GybytFluxControllerExceptionAdvice.class);
 
     /**
      * 处理web全局异常

@@ -1,6 +1,7 @@
 package cn.gybyt.annotation;
 
-import cn.gybyt.advice.ControllerResponseAdvice;
+import cn.gybyt.advice.ControllerFluxResponseAdvice;
+import cn.gybyt.advice.ControllerServletResponseAdvice;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -18,6 +19,6 @@ import java.lang.annotation.Target;
  **/
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Import({ControllerResponseAdvice.class})
+@Import({ControllerServletResponseAdvice.class, ControllerFluxResponseAdvice.class})
 public @interface EnableHandleResponse {
 }

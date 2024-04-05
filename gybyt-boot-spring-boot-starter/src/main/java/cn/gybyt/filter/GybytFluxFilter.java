@@ -1,4 +1,6 @@
-package cn.gybyt.filter;/**
+package cn.gybyt.filter;
+
+/**
  * flux认证拦截器
  *
  * @program: gybyt-tools

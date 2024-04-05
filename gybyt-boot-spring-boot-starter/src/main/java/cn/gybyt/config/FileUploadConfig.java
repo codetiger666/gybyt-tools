@@ -5,8 +5,11 @@ import cn.gybyt.config.properties.S3Property;
 import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.FileUpload;
 import cn.gybyt.util.S3Upload;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import software.amazon.awssdk.regions.Region;
 
 /**
  * S3文件上传配置
@@ -17,6 +20,8 @@ import org.springframework.context.annotation.Configuration;
  * @create: 2023/12/31 18:53
  **/
 @Configuration
+@ConditionalOnClass(Region.class)
+@Import(FileUploadProperty.class)
 public class FileUploadConfig {
 
     @Bean

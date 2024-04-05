@@ -27,7 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
  **/
 @RestControllerAdvice
 @ConditionalOnClass(ModelAndView.class)
-public class ControllerResponseAdvice implements ResponseBodyAdvice<Object> {
+public class ControllerServletResponseAdvice implements ResponseBodyAdvice<Object> {
 
     /**
      * 判断是否需要对返回进行处理

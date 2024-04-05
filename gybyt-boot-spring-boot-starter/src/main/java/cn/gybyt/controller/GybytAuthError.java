@@ -2,10 +2,12 @@ package cn.gybyt.controller;
 
 import cn.gybyt.util.BaseException;
 import cn.gybyt.util.BaseResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  * @create: 2022/8/7 15:30
  **/
 @RestController
+@ConditionalOnClass(ModelAndView.class)
 public class GybytAuthError {
 
     /**

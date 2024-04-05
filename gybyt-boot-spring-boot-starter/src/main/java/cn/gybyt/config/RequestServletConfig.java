@@ -22,8 +22,9 @@ import javax.servlet.DispatcherType;
  **/
 @Configuration
 @ConditionalOnWebApplication
+@ConditionalOnClass(ModelAndView.class)
 @ConditionalOnProperty(prefix = "gybyt", name = "enable-request-warpper", havingValue = "true", matchIfMissing = true)
-public class RequestConfig {
+public class RequestServletConfig {
 
     /**
      * 添加全局过滤器，设置优先级最低，保证最终使用request对象为自定义对象

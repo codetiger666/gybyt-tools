@@ -1,6 +1,8 @@
 package cn.gybyt.annotation;
 
-import cn.gybyt.config.AuthConfig;
+import cn.gybyt.config.AuthFluxConfig;
+import cn.gybyt.config.AuthServletConfig;
+import cn.gybyt.controller.GybytAuthError;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -18,6 +20,6 @@ import java.lang.annotation.Target;
  **/
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Import({AuthConfig.class})
+@Import({AuthServletConfig.class, AuthFluxConfig.class, GybytAuthError.class})
 public @interface EnableAuthFilter {
 }

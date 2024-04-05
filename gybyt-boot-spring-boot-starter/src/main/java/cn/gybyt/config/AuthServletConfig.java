@@ -18,14 +18,14 @@ import org.springframework.web.servlet.ModelAndView;
  * @create: 2023/1/17 19:26
  **/
 @Configuration
-public class AuthConfig {
+@ConditionalOnClass(ModelAndView.class)
+public class AuthServletConfig {
 
     /**
      * 添加全局过滤器，设置优先级最高，保证token验证在最前
      * @return
      */
     @Bean
-    @ConditionalOnClass(ModelAndView.class)
     public FilterRegistrationBean<GybytAuthFilter> gybytAuthFilterRegistration(JwtProperties jwtProperties) {
         FilterRegistrationBean<GybytAuthFilter> registrationBean = new FilterRegistrationBean<>();
         // 设置拦截器

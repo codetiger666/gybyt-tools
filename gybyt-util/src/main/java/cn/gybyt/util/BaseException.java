@@ -10,6 +10,7 @@ package cn.gybyt.util;
  **/
 
 public class BaseException extends RuntimeException {
+
     /**
      * 状态码
      */
