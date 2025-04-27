@@ -1,0 +1,9 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+cn.gybyt.config.properties.GybytMybatisProperties,\
+cn.gybyt.config.properties.GybytProperties,\
+cn.gybyt.config.properties.JwtProperties,\
+cn.gybyt.config.RedisConfig,\
+cn.gybyt.config.RequestServletConfig,\
+cn.gybyt.config.GybytMybatisConfig,\
+cn.gybyt.config.SpringUtilConfig,\
+cn.gybyt.config.FileUploadConfig

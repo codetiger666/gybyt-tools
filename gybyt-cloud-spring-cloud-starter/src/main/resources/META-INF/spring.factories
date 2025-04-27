@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+cn.gybyt.config.GybytOpenfeignConfig,\
+cn.gybyt.config.NacosConfig,\
+cn.gybyt.config.properties.GybytCloudProperties
