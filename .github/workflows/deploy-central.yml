@@ -63,3 +63,9 @@ jobs:
           GPG_KEYNAME: ${{ steps.import-gpg.outputs.fingerprint }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: mvn clean deploy -P release,deploy-central
+
+      - name: Remove workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+          retain_days: 1
+          keep_minimum_runs: 3
