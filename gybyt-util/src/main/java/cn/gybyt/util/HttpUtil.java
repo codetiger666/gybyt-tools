@@ -88,6 +88,20 @@ public class HttpUtil {
         }
     }
 
+    /**
+     * 异步请求
+     *
+     * @param url           请求地址
+     * @param paramMap      请求参数
+     * @param headerMap     请求头
+     * @param data          请求体
+     * @param method        请求方法
+     * @param media         请求媒体类型
+     * @param typeUtil      返回类型
+     * @param successHandle 成功回调
+     * @param errorHandle   失败回调
+     * @param <T>           返回类型泛型
+     */
     public static <T> void fetchSync(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Object data, Method method, Media media, TypeUtil<T> typeUtil, Consumer<T> successHandle, Consumer<Exception> errorHandle) {
         try {
             Request request = handleRequest(url, paramMap, headerMap, data, method, media);
@@ -115,6 +129,18 @@ public class HttpUtil {
         }
     }
 
+    /**
+     * 处理响应
+     *
+     * @param url          请求地址
+     * @param paramMap     请求参数
+     * @param data         请求体
+     * @param media        请求媒体类型
+     * @param responseBody 响应体
+     * @param typeUtil     返回类型
+     * @param errorHandle  失败回调
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private static <T> T handleResponse(String url, Map<String, Object> paramMap, Object data, Media media, ResponseBody responseBody, TypeUtil<T> typeUtil, Consumer<Exception> errorHandle) {
         try {
@@ -140,6 +166,17 @@ public class HttpUtil {
         }
     }
 
+    /**
+     * 处理异常
+     *
+     * @param url         请求地址
+     * @param paramMap    请求参数
+     * @param data        请求体
+     * @param media       请求媒体类型
+     * @param e           异常
+     * @param errorHandle 失败回调
+     * @param <T>         响应泛型
+     */
     private static <T> T handleError(String url, Map<String, Object> paramMap, Object data, Media media, Exception e, Consumer<Exception> errorHandle) {
         if (media == Media.JSON) {
             log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
