@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>gybyt-boot-spring-boot-starter</artifactId>
+    <name>${artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>gybyt-util</artifactId>
+    <name>${artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>

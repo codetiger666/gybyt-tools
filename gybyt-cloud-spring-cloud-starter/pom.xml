@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>gybyt-cloud-spring-cloud-starter</artifactId>
+    <name>${artifactId}</name>
     <packaging>jar</packaging>
 
     <dependencies>
