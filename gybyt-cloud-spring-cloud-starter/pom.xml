@@ -6,7 +6,7 @@
     <parent>
         <groupId>cn.gybyt</groupId>
         <artifactId>gybyt-bom</artifactId>
-        <version>0.0.5.2</version>
+        <version>0.0.5.3</version>
     </parent>
 
     <artifactId>gybyt-cloud-spring-cloud-starter</artifactId>
@@ -33,6 +33,11 @@
         <dependency>
             <groupId>cn.gybyt</groupId>
             <artifactId>gybyt-boot-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

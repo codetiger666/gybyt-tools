@@ -6,4 +6,5 @@ cn.gybyt.config.RedisConfig,\
 cn.gybyt.config.RequestServletConfig,\
 cn.gybyt.config.GybytMybatisConfig,\
 cn.gybyt.config.SpringUtilConfig,\
-cn.gybyt.config.FileUploadConfig
+cn.gybyt.config.FileUploadConfig,\
+cn.gybyt.service.impl.GybytUserManageServiceImpl
