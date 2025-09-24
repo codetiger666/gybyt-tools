@@ -254,7 +254,7 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
      * @return
      */
     public static Map<String, String> getRequestHeaders() {
-        HashMap<String, String> headersMap = new HashMap<>();
+        IgnoreCaseHashMap<String> headersMap = new IgnoreCaseHashMap<>();
         HttpServletRequest request = getServletRequest();
         if (BaseUtil.isNull(request)) {
             return new HashMap<>(0);
@@ -286,15 +286,13 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
      * @return
      */
     public static Map<String, String> getResponseHeaders() {
-        HashMap<String, String> headersMap = new HashMap<>();
+        IgnoreCaseHashMap<String> headersMap = new IgnoreCaseHashMap<>();
         HttpServletResponse response = getServletResponse();
         if (BaseUtil.isNull(response)) {
-            return new HashMap(0);
+            return new HashMap<>(0);
         }
         Collection<String> headerNames = response.getHeaderNames();
-        headerNames.forEach(headerName -> {
-            headersMap.put(headerName, response.getHeader(headerName));
-        });
+        headerNames.forEach(headerName -> headersMap.put(headerName, response.getHeader(headerName)));
         return headersMap;
     }
 
@@ -352,6 +350,22 @@ public class SpringUtil implements BeanFactoryPostProcessor, ApplicationContextA
      */
     public static String getProperty(String key) {
         return getContext().getEnvironment().getProperty(key);
+    }
+
+    private static class IgnoreCaseHashMap<V> extends HashMap<String, V> {
+        @Override
+        public V put(String key, V value) {
+            key = key == null ? null : key.toLowerCase(Locale.ROOT);
+            return super.put(key, value);
+        }
+
+        @Override
+        public V get(Object key) {
+            if (key instanceof String) {
+                key = ((String) key).toLowerCase(Locale.ROOT);
+            }
+            return super.get(key);
+        }
     }
 
 }

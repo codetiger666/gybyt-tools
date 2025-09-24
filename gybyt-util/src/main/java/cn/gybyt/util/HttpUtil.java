@@ -1,10 +1,6 @@
 package cn.gybyt.util;
 
 import cn.gybyt.concurrent.NamedThreadFactory;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.JSONReader;
-import com.alibaba.fastjson2.JSONWriter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
@@ -157,7 +153,7 @@ public class HttpUtil {
             try {
                 log.debug("请求 {} 成功", url);
                 log.debug(new String(dataBytes));
-                return JSON.parseObject(dataBytes, typeUtil.getType(), JSONReader.Feature.FieldBased);
+                return JsonUtil.parseObject(dataBytes, typeUtil);
             } catch (Exception e) {
                 return (T) new String(dataBytes);
             }
@@ -179,16 +175,16 @@ public class HttpUtil {
      */
     private static <T> T handleError(String url, Map<String, Object> paramMap, Object data, Media media, Exception e, Consumer<Exception> errorHandle) {
         if (media == Media.JSON) {
-            log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
+            log.error("请求 {} 失败, 请求体{}", url, JsonUtil.toJson(data));
         } else {
             Map<String, Object> dataMap = new HashMap<>();
             if (BaseUtil.isNotEmpty(paramMap)) {
                 dataMap.putAll(paramMap);
             }
             if (BaseUtil.isNotEmpty(data)) {
-                dataMap.putAll(JSON.parseObject(JSON.toJSONString(data, JSONWriter.Feature.FieldBased)));
+                dataMap.putAll(JsonUtil.parseObject(JsonUtil.toJson(data), new TypeUtil<Map<? extends String, ?>>() {}));
             }
-            log.error("请求 {} 失败, 请求体{}", url, JSON.toJSONString(dataMap, JSONWriter.Feature.FieldBased));
+            log.error("请求 {} 失败, 请求体{}", url, JsonUtil.toJson(dataMap));
         }
         log.error("请求失败", e);
         if (BaseUtil.isNotEmpty(errorHandle)) {
@@ -239,21 +235,25 @@ public class HttpUtil {
                                 .replaceAll("&$", "");
             }
             body = RequestBody.create(MediaType.parse("application/json"),
-                                      JSON.toJSONString(data, JSONWriter.Feature.FieldBased));
+                                      JsonUtil.toJson(data));
         }
         if (media == Media.X_FROM) {
-            JSONObject jsonObject = JSONObject.from(data, JSONWriter.Feature.FieldBased);
+            Map<String, Object> jsonMap = JsonUtil.parseObject(JsonUtil.toJson(data),
+                                                                       new TypeUtil<Map<String, Object>>() {
+                                                                       });
             FormBody.Builder formBodyBuilder = new FormBody.Builder();
-            jsonObject.forEach((k, v) -> formBodyBuilder.add(k, String.valueOf(v)));
+            jsonMap.forEach((k, v) -> formBodyBuilder.add(k, String.valueOf(v)));
             if (BaseUtil.isNotEmpty(paramMap)) {
                 paramMap.forEach((k, v) -> formBodyBuilder.add(k, String.valueOf(v)));
             }
             body = formBodyBuilder.build();
         }
         if (media == Media.FORM) {
-            JSONObject jsonObject = JSONObject.from(data, JSONWriter.Feature.FieldBased);
+            Map<String, Object> jsonMap = JsonUtil.parseObject(JsonUtil.toJson(data),
+                                                               new TypeUtil<Map<String, Object>>() {
+                                                               });
             MultipartBody.Builder formBodyBuilder = new MultipartBody.Builder();
-            jsonObject.forEach((k, v) -> formBodyBuilder.addFormDataPart(k, String.valueOf(v)));
+            jsonMap.forEach((k, v) -> formBodyBuilder.addFormDataPart(k, String.valueOf(v)));
             if (BaseUtil.isNotEmpty(paramMap)) {
                 paramMap.forEach((k, v) -> {
                     if (v instanceof File) {

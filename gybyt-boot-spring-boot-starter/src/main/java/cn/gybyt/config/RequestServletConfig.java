@@ -23,7 +23,7 @@ import javax.servlet.DispatcherType;
 @Configuration
 @ConditionalOnWebApplication
 @ConditionalOnClass(ModelAndView.class)
-@ConditionalOnProperty(prefix = "gybyt", name = "enable-request-warpper", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "gybyt", name = "enable-request-warpper", havingValue = "true")
 public class RequestServletConfig {
 
     /**

@@ -6,7 +6,7 @@
     <parent>
         <groupId>cn.gybyt</groupId>
         <artifactId>gybyt-bom</artifactId>
-        <version>0.0.5.3</version>
+        <version>0.0.5.4</version>
     </parent>
 
     <artifactId>gybyt-util</artifactId>
@@ -34,12 +34,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!--fastjson-->
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
             <optional>true</optional>
         </dependency>
         <!--easyexcel-->

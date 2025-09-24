@@ -7,11 +7,14 @@ import cn.gybyt.util.BaseException;
 import cn.gybyt.util.BaseResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -64,6 +67,12 @@ public class AuthServletConfig extends WebSecurityConfigurerAdapter {
             }
             response.getWriter().write(new ObjectMapper().writeValueAsString(baseResponse));
         });
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // 使用 BCrypt 加密密码
+        return new BCryptPasswordEncoder();
     }
 
 }

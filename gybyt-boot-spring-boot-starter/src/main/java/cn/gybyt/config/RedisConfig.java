@@ -28,7 +28,7 @@ import java.util.Objects;
  **/
 @Configuration
 @ConditionalOnClass({RedisConnectionFactory.class})
-@ConditionalOnProperty(prefix = "gybyt", name = "enable-cache", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "gybyt", name = "enable-cache", havingValue = "true")
 public class RedisConfig {
 
     /**

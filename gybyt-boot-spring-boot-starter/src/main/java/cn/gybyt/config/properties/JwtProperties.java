@@ -1,6 +1,8 @@
 package cn.gybyt.config.properties;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import lombok.Data;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,7 @@ import java.util.List;
  **/
 @Configuration
 @Component
+@Data
 @ConditionalOnClass(JWT.class)
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
@@ -47,57 +50,33 @@ public class JwtProperties {
      * 存入redis中的key前缀
      */
     private String keyPrefix = "";
+    /**
+     * 算法
+     */
+    private String algorithm = "HMAC256";
+    /**
+     * 用户名字段
+     */
+    private String username = "username";
 
     /**
      * 请求白名单
      */
     private List<String> whiteList = new ArrayList<>();
 
-    public String getHeader() {
-        return header;
+    public Algorithm getAlgorithm() {
+        Algorithm algorithm;
+        switch (this.algorithm) {
+            case "HMAC256":
+                algorithm = Algorithm.HMAC256(this.secret);
+                break;
+            case "HMAC512":
+                algorithm = Algorithm.HMAC512(this.secret);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported algorithm: " + this.algorithm);
+        }
+        return algorithm;
     }
 
-    public void setHeader(String header) {
-        this.header = header;
-    }
-
-    public String getTokenPrefix() {
-        return tokenPrefix;
-    }
-
-    public void setTokenPrefix(String tokenPrefix) {
-        this.tokenPrefix = tokenPrefix;
-    }
-
-    public String getSecret() {
-        return secret;
-    }
-
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
-
-    public Integer getExpireTime() {
-        return expireTime;
-    }
-
-    public void setExpireTime(Integer expireTime) {
-        this.expireTime = expireTime;
-    }
-
-    public String getKeyPrefix() {
-        return keyPrefix;
-    }
-
-    public void setKeyPrefix(String keyPrefix) {
-        this.keyPrefix = keyPrefix;
-    }
-
-    public List<String> getWhiteList() {
-        return whiteList;
-    }
-
-    public void setWhiteList(List<String> whiteList) {
-        this.whiteList = whiteList;
-    }
 }
