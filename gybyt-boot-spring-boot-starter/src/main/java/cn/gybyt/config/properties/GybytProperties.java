@@ -22,7 +22,7 @@ public class GybytProperties {
     /**
      * 是否开启请求处理
      */
-    private Boolean enableRequestWarpper = true;
+    private Boolean enableRequestWarpper;
     /**
      * 是否开启缓存支持
      */
