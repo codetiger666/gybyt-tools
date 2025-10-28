@@ -33,10 +33,12 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
     private final static String DRUID_POOL_CLASS_NAME = "com.alibaba.druid.pool.DruidPooledPreparedStatement";
+    private final Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
+        this.sqlPattern = Pattern.compile("^.*?((:?" + gybytMybatisProperties.getSqlPattern() + ").*$)", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -54,16 +56,14 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             Statement statement1 = ReflectUtil.getFieldValueByFieldName(statement, "stmt.raw");
             statement = statement1 == null ? statement : statement1;
         }
-        String sql = ReflectUtil.getFieldValueByFieldName(statement, "originalSql");
+        String sql = statement.toString();
         // 格式化sql语句
         if (BaseUtil.isNotEmpty(sql)) {
             try {
                 sql = sql.replaceAll("\\s+", " ");
-                byte[][] parameterValues = ReflectUtil.getFieldValueByFieldName(statement, "parameterValues");
-                if (BaseUtil.isNotEmpty(parameterValues)) {
-                    for (int i = 0; i < parameterValues.length; i++) {
-                        sql = sql.replaceFirst("\\?", new String(parameterValues[i]));
-                    }
+                Matcher matcher = sqlPattern.matcher(sql);
+                if (matcher.find() && matcher.groupCount() > 1) {
+                    sql = matcher.group(1);
                 }
             } catch (Exception ignored) {}
         }
