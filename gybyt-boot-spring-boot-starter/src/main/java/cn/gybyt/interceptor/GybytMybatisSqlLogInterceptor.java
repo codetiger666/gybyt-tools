@@ -38,7 +38,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
-        this.sqlPattern = Pattern.compile("^.*?((:?" + gybytMybatisProperties.getSqlPattern() + ").*$)", Pattern.CASE_INSENSITIVE);
+        this.sqlPattern = Pattern.compile("^.*?((?:" + gybytMybatisProperties.getSqlPattern() + ").*$)", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -62,8 +62,14 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             try {
                 sql = sql.replaceAll("\\s+", " ");
                 Matcher matcher = sqlPattern.matcher(sql);
-                if (matcher.find() && matcher.groupCount() > 1) {
-                    sql = matcher.group(1);
+                matcher.find();
+                sql = matcher.group(1);
+                // 去除 PreparedStatement 和 CallableStatement 前缀
+                if (sql.startsWith("PreparedStatement: ")) {
+                    sql = sql.replaceAll("PreparedStatement: ", "");
+                }
+                if (sql.startsWith("CallableStatement: ")) {
+                    sql = sql.replaceAll("CallableStatement: ", "");
                 }
             } catch (Exception ignored) {}
         }
