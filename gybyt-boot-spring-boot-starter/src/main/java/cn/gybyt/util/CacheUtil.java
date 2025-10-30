@@ -311,6 +311,7 @@ public class CacheUtil {
                 return;
             }
             redisTemplate.opsForValue().set(key, o);
+            return;
         }
         if (o instanceof String) {
             stringRedisTemplate.opsForValue().set(key, o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
@@ -336,6 +337,53 @@ public class CacheUtil {
     }
 
     /**
+     * 添加缓存(非null值)
+     * @param cacheName 缓存名称
+     * @param preKey 缓存key前缀
+     * @param key 缓存key
+     * @param o 需缓存的对象
+     */
+    public static void set(String cacheName, String preKey, String key, Object o) {
+        if (BaseUtil.isNull(o)) {
+            return;
+        }
+        if (o instanceof String) {
+            stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+            return;
+        }
+        redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 添加缓存(非null值)
+     * @param cacheName 缓存名称
+     * @param preKey 缓存key前缀
+     * @param key 缓存key
+     * @param o 需缓存的对象
+     */
+    public static void set(String cacheName, String preKey, String key, Object o, Long timeout) {
+        if (BaseUtil.isNull(o)) {
+            return;
+        }
+        if (BaseUtil.isNull(timeout)) {
+            timeout = 24 * 60 * 60 * 1000L;
+        }
+        if (timeout == -1L) {
+            if (o instanceof String) {
+                stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o);
+                return;
+            }
+            redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o);
+            return;
+        }
+        if (o instanceof String) {
+            stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+            return;
+        }
+        redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * 添加Hash缓存(非null值)
      * @param key 缓存key
      * @param o 需缓存的对象
@@ -354,6 +402,8 @@ public class CacheUtil {
                 return;
             }
             redisTemplate.opsForHash().put(key, hashKey, o);
+            redisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+            return;
         }
         if (o instanceof String) {
             stringRedisTemplate.opsForHash().put(key, hashKey, o);
