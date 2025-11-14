@@ -34,6 +34,6 @@ public class GybytMybatisProperties {
     /**
      * SQL语句匹配规则
      */
-    private String sqlPattern = "select|insert|update|delete|replace|merge|with|explain|analyze|create|alter|drop|truncate|rename|comment|grant|revoke|call|exec|execute|set|use|show|describe|desc|commit|rollback|savepoint|release|lock|unlock|start|begin|end|declare|fetch|open|close|cursor|if|while|loop|for|exit|return|optimize|repair|check|load|import|export|copy|into|values|do|signal|resignal|prepare|deallocate|flush|reset|kill|help|listen|notify|unlisten|vacuum|attach|detach|purge|connect|disconnect|backup|restore|reindex|cluster";
+    private String sqlPattern = "select|insert|update|delete|replace|merge|with|explain|analyze|create|alter|drop|truncate|rename|comment|grant|revoke|call|exec|execute|set|use|show|describe|desc|commit|rollback|savepoint|release|lock|unlock|start|begin|end|declare|fetch|open|close|cursor|if|while|loop|for|exit|return|optimize|repair|check|load|import|export|copy|into|values|do|signal|resignal|deallocate|flush|reset|kill|help|listen|notify|unlisten|vacuum|attach|detach|purge|connect|disconnect|backup|restore|reindex|cluster";
 
 }

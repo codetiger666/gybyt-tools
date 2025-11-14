@@ -64,13 +64,6 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
                 Matcher matcher = sqlPattern.matcher(sql);
                 matcher.find();
                 sql = matcher.group(1);
-                // 去除 PreparedStatement 和 CallableStatement 前缀
-                if (sql.startsWith("PreparedStatement: ")) {
-                    sql = sql.replaceAll("PreparedStatement: ", "");
-                }
-                if (sql.startsWith("CallableStatement: ")) {
-                    sql = sql.replaceAll("CallableStatement: ", "");
-                }
             } catch (Exception ignored) {}
         }
         // 获取实际sql执行方法

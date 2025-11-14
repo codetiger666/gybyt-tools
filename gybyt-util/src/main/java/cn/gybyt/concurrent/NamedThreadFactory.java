@@ -1,5 +1,8 @@
 package cn.gybyt.concurrent;
 
+import cn.gybyt.util.BaseUtil;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author: codetiger
  * @create: 2024/1/1 17:43
  **/
+@Slf4j
 public class NamedThreadFactory implements ThreadFactory {
 
     /**
@@ -28,6 +32,9 @@ public class NamedThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable runnable) {
-        return new Thread(runnable, String.format("%s-%s", prefix, threadNumber.getAndIncrement()));
+        int index = threadNumber.getAndIncrement();
+        Thread t = new Thread(runnable, BaseUtil.format("{}-{}", prefix, index));
+        t.setUncaughtExceptionHandler((thread, e) -> log.error(e.getMessage(), e));
+        return t;
     }
 }
