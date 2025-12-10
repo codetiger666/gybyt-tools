@@ -1,5 +1,7 @@
 package cn.gybyt.util;
 
+import cn.gybyt.config.properties.JwtProperties;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -12,12 +14,18 @@ import javax.servlet.http.HttpServletRequest;
  **/
 public class AuthUtil {
 
+    private static JwtProperties JWT_PROPERTIES;
+
+    static {
+        JWT_PROPERTIES = SpringUtil.getBean(JwtProperties.class);
+    }
+
     public static String getUsername() {
-        HttpServletRequest request = SpringUtil.getServletRequest();
-        if (request == null) {
-            throw new BaseException("无法获取请求对象");
+        String token = SpringUtil.getRequestHeader(JWT_PROPERTIES.getHeader());
+        if (BaseUtil.isEmpty(token)) {
+            throw new BaseException("获取认证信息失败");
         }
-        String username = (String) request.getAttribute("username");
+        String username = JwtUtil.validateToken(token);
         if (BaseUtil.isEmpty(username)) {
             throw new BaseException("获取用户名失败");
         }
