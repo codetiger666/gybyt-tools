@@ -6,7 +6,7 @@
     <parent>
         <groupId>cn.gybyt</groupId>
         <artifactId>gybyt-bom</artifactId>
-        <version>0.0.5.5</version>
+        <version>0.0.5.6</version>
     </parent>
 
     <artifactId>gybyt-cloud-spring-cloud-starter</artifactId>
