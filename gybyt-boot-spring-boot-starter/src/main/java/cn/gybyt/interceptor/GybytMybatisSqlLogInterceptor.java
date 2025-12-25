@@ -33,6 +33,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
     private final static String DRUID_POOL_CLASS_NAME = "com.alibaba.druid.pool.DruidPooledPreparedStatement";
+    private final static String SEATA_DATASORCE_PROXY_CLASS_NAME = "io.seata.rm.datasource.PreparedStatementProxy";
     private final Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
 
@@ -54,6 +55,11 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         // 阿里巴巴连接池特殊处理
         if (ReflectUtil.isSameType(DRUID_POOL_CLASS_NAME, ReflectUtil.getClass(statement))) {
             Statement statement1 = ReflectUtil.getFieldValueByFieldName(statement, "stmt.raw");
+            statement = statement1 == null ? statement : statement1;
+        }
+        // SEATA分布式事务特殊处理
+        if (ReflectUtil.isSameType(SEATA_DATASORCE_PROXY_CLASS_NAME, ReflectUtil.getClass(statement))) {
+            Statement statement1 = ReflectUtil.getFieldValueByFieldName(statement, "targetStatement.delegate");
             statement = statement1 == null ? statement : statement1;
         }
         String sql = statement.toString();

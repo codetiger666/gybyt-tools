@@ -1,5 +1,6 @@
 package cn.gybyt.wrapper;
 
+import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.FileUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -56,7 +57,8 @@ public class GybytHttpServletRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         // 不处理文件类型请求
-        if (super.getHeader(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
+        String contentType = super.getHeader(HttpHeaders.CONTENT_TYPE);
+        if (BaseUtil.isNotEmpty(contentType) && contentType.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
             return super.getInputStream();
         }
         if (this.body == null) {
