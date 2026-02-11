@@ -1,7 +1,6 @@
 package cn.gybyt.plugins;
 
 import cn.gybyt.util.ReflectUtil;
-import cn.gybyt.util.SpringUtil;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.builder.xml.XMLMapperEntityResolver;
 import org.apache.ibatis.executor.keygen.SelectKeyGenerator;
@@ -97,28 +96,33 @@ public class GybytMybatisMapperRefreshPlugin {
             }
             if (isChanged()) {
                 for (Resource resource : mapperLocations) {
-                    XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(resource.getInputStream(),
-                            configuration, resource.toString(), configuration.getSqlFragments());
-                    XPathParser xPathParser = new XPathParser(resource.getInputStream(), true, configuration.getVariables(),
-                            new XMLMapperEntityResolver());
-                    XNode xNode = xPathParser.evalNode("/mapper");
-                    // 获取mapper命名空间
-                    String namespace = xNode.getStringAttribute("namespace");
-                    // 清除缓存的mapper节点
-                    cleanMappedStateMents(xNode.evalNodes("*"), configuration, namespace);
-                    // 清除缓存的parameter节点
-                    cleanParameterMap(xNode.evalNodes("/mapper/parameterMap"), configuration, namespace);
-                    // 清除缓存的keyGen节点
-                    cleanKeyGenerators(xNode.evalNodes("*"), configuration, namespace);
-                    // 清除缓存的SQL语句
-                    cleanSqlElement(xNode.evalNodes("/mapper/sql"), configuration, namespace);
-                    // 清空缓存的结果集
-                    cleanResultMap(xNode.evalNodes("/mapper/resultMap"), configuration, namespace);
-                    // 清除已经加载的资源
-                    cleanLoadedResource(resource.toString(), configuration);
-                    xmlMapperBuilder.parse();
-                    if (changeList.contains(resource.getFilename())) {
-                        log.info("[" + resource.getFilename() + "] refresh finished");
+                    try {
+                        if (!changeList.contains(resource.getFilename())) {
+                            continue;
+                        }
+                        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(resource.getInputStream(),
+                                                                                 configuration, resource.toString(), configuration.getSqlFragments());
+                        XPathParser xPathParser = new XPathParser(resource.getInputStream(), true, configuration.getVariables(),
+                                                                  new XMLMapperEntityResolver());
+                        XNode xNode = xPathParser.evalNode("/mapper");
+                        // 获取mapper命名空间
+                        String namespace = xNode.getStringAttribute("namespace");
+                        // 清除缓存的mapper节点
+                        cleanMappedStateMents(xNode.evalNodes("*"), configuration, namespace);
+                        // 清除缓存的parameter节点
+                        cleanParameterMap(xNode.evalNodes("/mapper/parameterMap"), configuration, namespace);
+                        // 清除缓存的keyGen节点
+                        cleanKeyGenerators(xNode.evalNodes("*"), configuration, namespace);
+                        // 清除缓存的SQL语句
+                        cleanSqlElement(xNode.evalNodes("/mapper/sql"), configuration, namespace);
+                        // 清空缓存的结果集
+                        cleanResultMap(xNode.evalNodes("/mapper/resultMap"), configuration, namespace);
+                        // 清除已经加载的资源
+                        cleanLoadedResource(resource.toString(), configuration);
+                        xmlMapperBuilder.parse();
+                        log.info("[{}] refresh finished", resource.getFilename());
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
                     }
                 }
             }
