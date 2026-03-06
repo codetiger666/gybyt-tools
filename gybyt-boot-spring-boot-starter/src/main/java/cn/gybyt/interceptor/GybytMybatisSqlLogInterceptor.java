@@ -73,7 +73,13 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             } catch (Exception ignored) {}
         }
         // 获取实际sql执行方法
-        Object delegate = ReflectUtil.getFieldValueByFieldName(invocation.getTarget(), "delegate");
+        Object target = invocation.getTarget();
+        Object delegate;
+        if (Proxy.isProxyClass(target.getClass())) {
+            delegate = ReflectUtil.getFieldValueByFieldName(target, "h.target.delegate");
+        } else {
+            delegate = ReflectUtil.getFieldValueByFieldName(target, "delegate");
+        }
         MappedStatement mappedStatement = ReflectUtil.getFieldValueByFieldName(delegate, "mappedStatement");
         // 计算执行 SQL 耗时
         long start = System.currentTimeMillis();
