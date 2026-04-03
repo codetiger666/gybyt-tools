@@ -5,6 +5,10 @@ import lombok.NonNull;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -66,6 +70,7 @@ public class BaseUtil {
 
     /**
      * 判断对象是否无值
+     *
      * @param o
      * @return
      */
@@ -74,11 +79,12 @@ public class BaseUtil {
             return true;
         } else if (o instanceof CharSequence) {
             return ((CharSequence) o).length() == 0;
-        } else if (Objects.requireNonNull(ReflectUtil.getClass(o)).isArray()) {
+        } else if (Objects.requireNonNull(ReflectUtil.getClass(o))
+                          .isArray()) {
             return Array.getLength(o) == 0;
         } else if (o instanceof Collection) {
             return ((Collection<?>) o).isEmpty();
-        } else if (o instanceof Map){
+        } else if (o instanceof Map) {
             return ((Map<?, ?>) o).isEmpty();
         } else {
             return false;
@@ -97,24 +103,27 @@ public class BaseUtil {
 
     /**
      * 集合转map
+     *
      * @param dataList
      * @param keyFun
-     * @return
      * @param <T>
+     * @return
      */
     public static <T, R> Map<R, T> listToMap(Collection<T> dataList, Function<T, R> keyFun) {
         if (BaseUtil.isEmpty(dataList)) {
             return new HashMap<>(0);
         }
-        return dataList.stream().collect(Collectors.toMap(keyFun, Function.identity(), (key1, key2) -> key2));
+        return dataList.stream()
+                       .collect(Collectors.toMap(keyFun, Function.identity(), (key1, key2) -> key2));
     }
 
     /**
      * 字符串转列表
-     * @param str 原始字符串
+     *
+     * @param str   原始字符串
      * @param regex 分隔符
-     * @return
      * @param <T>
+     * @return
      */
     @SuppressWarnings("unchecked")
     public static <T> List<T> toList(CharSequence str, String regex) {
@@ -158,6 +167,7 @@ public class BaseUtil {
 
     /**
      * 数字转字符串，补全位数
+     *
      * @param number
      * @param length
      * @return
@@ -183,6 +193,7 @@ public class BaseUtil {
 
     /**
      * 生成随机字符串
+     *
      * @param length
      * @return
      */
@@ -201,7 +212,7 @@ public class BaseUtil {
      * 格式化字符串
      *
      * @param format 待格式字符串
-     * @param args 需要填充的数据
+     * @param args   需要填充的数据
      * @return 格式化后的字符串
      */
     @SafeVarargs
@@ -251,7 +262,14 @@ public class BaseUtil {
         else if (o instanceof byte[]) {
             return new String((byte[]) o, StandardCharsets.UTF_8);
         } else if (o instanceof ByteBuffer) {
-            return StandardCharsets.UTF_8.decode((ByteBuffer) o).toString();
+            return StandardCharsets.UTF_8.decode((ByteBuffer) o)
+                                         .toString();
+        } else if (o instanceof Date) {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((Date) o);
+        } else if (o instanceof LocalDate) {
+            return ((LocalDate) o).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } else if (o instanceof LocalDateTime) {
+            return ((LocalDateTime) o).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         } else if (o instanceof Collection) {
             StringBuilder strBuilder = new StringBuilder();
             strBuilder.append("[ ");
@@ -260,6 +278,26 @@ public class BaseUtil {
             return strBuilder.toString();
         }
         return o.toString();
+    }
+
+    /**
+     * 是否为基本类型
+     *
+     * @param obj 原始对象
+     * @return 是否为基本类型
+     */
+    public static boolean isSimpleType(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        Class<?> c = obj.getClass();
+        return c.isPrimitive()
+                || Number.class.isAssignableFrom(c)
+                || CharSequence.class.isAssignableFrom(c)
+                || Date.class.isAssignableFrom(c)
+                || Boolean.class.isAssignableFrom(c)
+                || Character.class.isAssignableFrom(c)
+                || c.isEnum();
     }
 
 }
