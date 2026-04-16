@@ -1,6 +1,7 @@
 package cn.gybyt.config;
 
 import cn.gybyt.filter.GybytRequestFilter;
+import jakarta.servlet.DispatcherType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -10,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.DispatcherType;
 
 /**
  * 请求配置

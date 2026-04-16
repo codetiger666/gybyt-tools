@@ -8,6 +8,8 @@ import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.ReflectUtil;
 import cn.gybyt.util.SpringUtil;
 import com.alibaba.druid.pool.DruidDataSource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -23,8 +25,6 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +97,7 @@ public class GybytDynamicDataSourceConfig {
     @ConditionalOnClass({SqlSessionFactory.class, MybatisProperties.class})
     @Primary
     @Bean
-    public SqlSessionFactory sqlSessionFactoryBean(GybytDynamicDataSourceRoute gybytDynamicDataSourceRoute, List<Interceptor> interceptors) throws Exception {
+    public SqlSessionFactory sqlSessionFactoryBean(GybytDynamicDataSourceRoute gybytDynamicDataSourceRoute, List<Interceptor> interceptors, org.apache.ibatis.session.Configuration configuration) throws Exception {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(gybytDynamicDataSourceRoute);
         MybatisProperties mybatisProperties = SpringUtil.getBean(MybatisProperties.class);
@@ -109,7 +109,7 @@ public class GybytDynamicDataSourceConfig {
         if (BaseUtil.isNotEmpty(mybatisProperties.getTypeAliasesPackage())) {
             sqlSessionFactoryBean.setTypeAliasesPackage(mybatisProperties.getTypeAliasesPackage());
         }
-        sqlSessionFactoryBean.setConfiguration(mybatisProperties.getConfiguration());
+        sqlSessionFactoryBean.setConfiguration(configuration);
         sqlSessionFactoryBean.setPlugins(interceptors.toArray(new Interceptor[0]));
         return sqlSessionFactoryBean.getObject();
     }

@@ -4,6 +4,7 @@ import cn.gybyt.annotation.SwitchDataSource;
 import cn.gybyt.config.properties.GybytDynamicProperties;
 import cn.gybyt.util.BaseException;
 import cn.gybyt.util.BaseUtil;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -14,7 +15,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -2,7 +2,6 @@ package cn.gybyt.util;
 
 import cn.gybyt.config.properties.JwtProperties;
 
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * 验证工具类
