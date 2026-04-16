@@ -2,7 +2,7 @@ name: deploy-central
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, main-boot3 ]
 
 jobs:
   build:
