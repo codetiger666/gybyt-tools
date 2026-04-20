@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Proxy;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +40,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
     private final static String SEATA_DATASORCE_PROXY_CLASS_NAME = "io.seata.rm.datasource.PreparedStatementProxy";
     private final Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
+    private final static Map<String, Pattern> PATTERN_MAP = new ConcurrentHashMap<>();
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
@@ -126,15 +129,52 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             } catch (Exception e) {
                 log.error("sql处理失败", e);
             }
+            String executeId = BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement)
+                                                                     .getId() : "";
+            // 处理跳过的包
+            for (String skipPackage : gybytMybatisProperties.getSkipPackages()) {
+                if (getPattern(skipPackage).matcher(executeId).find()) {
+                    return result;
+                }
+            }
             log.info(
                     "\n\n==============  Sql Start  ==============\nExecute ID  ：{}\nExecute SQL ：{}\nExecute Time：{} ms\n==============  Sql  End   ==============\n",
-                    BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement)
-                                                                  .getId() : "",
+                    executeId,
                     sql,
                     end - start
             );
         }
         return result;
+    }
+
+    private static Pattern getPattern(String str) {
+        Pattern pattern = PATTERN_MAP.get(str);
+        if (pattern != null) {
+            return pattern;
+        }
+        StringBuilder regex = new StringBuilder("^");
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '*') {
+                if (i + 1 < str.length() && str.charAt(i + 1) == '*') {
+                    regex.append(".*");
+                    i++;
+                } else {
+                    regex.append("[^.]+");
+                }
+            } else if (c == '.') {
+                regex.append("\\.");
+            } else {
+                if ("\\[]{}()+-^$|".indexOf(c) >= 0) {
+                    regex.append("\\");
+                }
+                regex.append(c);
+            }
+        }
+        regex.append("$");
+        pattern = Pattern.compile(regex.toString());
+        PATTERN_MAP.put(str, pattern);
+        return pattern;
     }
 
     private Object getData(Object o, String key) {
