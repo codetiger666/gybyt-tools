@@ -6,7 +6,7 @@
 
     <groupId>cn.gybyt</groupId>
     <artifactId>gybyt-bom</artifactId>
-    <version>3.0.0.2</version>
+    <version>3.0.0.3</version>
     <packaging>pom</packaging>
     <name>gybyt tools</name>
     <description>Gybyt 工具包</description>
@@ -67,7 +67,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <mybatis.version>3.0.3</mybatis.version>
         <jackson.version>2.15.0</jackson.version>
-        <gybyt.tool.version>3.0.0.1</gybyt.tool.version>
+        <gybyt.tool.version>3.0.0.3</gybyt.tool.version>
         <easyexcel.version>3.3.2</easyexcel.version>
         <druid.version>1.2.16</druid.version>
         <aws.s3.version>2.22.6</aws.s3.version>
