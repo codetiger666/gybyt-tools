@@ -165,8 +165,9 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             case "String":
                 return BaseUtil.format("'{}'", o);
             case "Date":
-            case "DateTime":
                 return formatDateValue(o, "date");
+            case "DateTime":
+                return formatDateValue(o, "timestamp");
             case "LocalDate":
                 return formatDateValue(o, "date");
             case "LocalDateTime":
