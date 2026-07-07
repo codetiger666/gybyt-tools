@@ -42,5 +42,9 @@ public class GybytMybatisProperties {
      * 排除的包
      */
     private List<String> skipPackages = new ArrayList<>();
+    /**
+     * 数据库类型，支持 mysql、postgresql、oracle，默认 mysql
+     */
+    private String databaseType = "mysql";
 
 }
