@@ -2,8 +2,8 @@ package cn.gybyt.filter;
 
 import cn.gybyt.wrapper.GybytHttpServletRequestWrapper;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
