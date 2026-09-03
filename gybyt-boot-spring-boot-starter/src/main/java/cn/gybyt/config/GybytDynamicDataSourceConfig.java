@@ -109,7 +109,6 @@ public class GybytDynamicDataSourceConfig {
         if (BaseUtil.isNotEmpty(mybatisProperties.getTypeAliasesPackage())) {
             sqlSessionFactoryBean.setTypeAliasesPackage(mybatisProperties.getTypeAliasesPackage());
         }
-        sqlSessionFactoryBean.setConfiguration(mybatisProperties.getConfiguration());
         sqlSessionFactoryBean.setPlugins(interceptors.toArray(new Interceptor[0]));
         return sqlSessionFactoryBean.getObject();
     }
