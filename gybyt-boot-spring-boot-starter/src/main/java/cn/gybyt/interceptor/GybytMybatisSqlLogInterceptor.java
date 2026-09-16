@@ -14,7 +14,6 @@ import org.apache.ibatis.session.ResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Proxy;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.Objects;
@@ -34,10 +33,13 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
     private final Pattern sqlPattern;
     private GybytMybatisProperties gybytMybatisProperties;
+    private final String databaseType;
     private final static Map<String, Pattern> PATTERN_MAP = new ConcurrentHashMap<>();
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
+        this.databaseType = gybytMybatisProperties.getDatabaseType() != null
+                ? gybytMybatisProperties.getDatabaseType().toLowerCase() : "mysql";
         this.sqlPattern = Pattern.compile("^.*?((?:" + gybytMybatisProperties.getSqlPattern() + ").*$)",
                                           Pattern.CASE_INSENSITIVE);
     }
@@ -102,24 +104,6 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         } else if (metaObject.hasGetter("mappedStatement")) {
             mappedStatement = (MappedStatement) metaObject.getValue("mappedStatement");
         }
-        if (mappedStatement == null) {
-            if (Proxy.isProxyClass(statementHandler.getClass())) {
-                try {
-                    Object plugin = Proxy.getInvocationHandler(statementHandler);
-                    MetaObject pluginMetaObject = SystemMetaObject.forObject(plugin);
-                    if (pluginMetaObject.hasGetter("target")) {
-                        Object realTarget = pluginMetaObject.getValue("target");
-                        MetaObject realMetaObject = SystemMetaObject.forObject(realTarget);
-                        if (realMetaObject.hasGetter("delegate.mappedStatement")) {
-                            mappedStatement = (MappedStatement) realMetaObject.getValue("delegate.mappedStatement");
-                        } else if (realMetaObject.hasGetter("mappedStatement")) {
-                            mappedStatement = (MappedStatement) realMetaObject.getValue("mappedStatement");
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        }
         String executeId = BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement)
                 .getId() : "";
         // 处理跳过的包
@@ -174,22 +158,34 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private String toStr(Object o) {
         if (o == null) {
-            return "";
+            return "null";
         }
-        switch (o.getClass()
-                .getSimpleName()) {
+        String simpleName = o.getClass().getSimpleName();
+        switch (simpleName) {
             case "String":
                 return BaseUtil.format("'{}'", o);
             case "Date":
-                return BaseUtil.format("date '{}'", o);
+                return formatDateValue(o, "date");
             case "DateTime":
-                return BaseUtil.format("timestamp '{}'", o);
+                return formatDateValue(o, "timestamp");
             case "LocalDate":
-                return BaseUtil.format("date '{}'", o);
+                return formatDateValue(o, "date");
             case "LocalDateTime":
-                return BaseUtil.format("timestamp '{}'", o);
+                return formatDateValue(o, "timestamp");
             default:
                 return BaseUtil.toStr(o);
+        }
+    }
+
+    private String formatDateValue(Object o, String type) {
+        switch (databaseType) {
+            case "mysql":
+                return BaseUtil.format("'{}'", o);
+            case "oracle":
+                return BaseUtil.format("{} '{}'", type.toUpperCase(), o);
+            case "postgresql":
+            default:
+                return BaseUtil.format("{} '{}'", type, o);
         }
     }
 
