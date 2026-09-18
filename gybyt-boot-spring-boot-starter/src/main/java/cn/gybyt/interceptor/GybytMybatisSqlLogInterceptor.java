@@ -28,9 +28,7 @@ import java.util.regex.Pattern;
                                                                          RowBounds.class,
                                                                          org.apache.ibatis.session.ResultHandler.class}),
              @Signature(type = Executor.class, method = "update", args = {MappedStatement.class,
-                                                                          Object.class}),
-             @Signature(type = Executor.class, method = "batch", args = {MappedStatement.class,
-                                                                         Object.class})})
+                                                                          Object.class})})
 public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
