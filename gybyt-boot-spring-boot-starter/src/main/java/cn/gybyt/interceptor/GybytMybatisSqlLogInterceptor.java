@@ -3,16 +3,20 @@ package cn.gybyt.interceptor;
 import cn.gybyt.config.properties.GybytMybatisProperties;
 import cn.gybyt.util.BaseUtil;
 import cn.gybyt.util.ReflectUtil;
-import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.plugin.*;
-import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.SystemMetaObject;
+import org.apache.ibatis.session.ResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Statement;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -23,12 +27,7 @@ import java.util.regex.Pattern;
  *
  * @author codetiger
  */
-@Intercepts({@Signature(type = Executor.class, method = "query", args = {MappedStatement.class,
-                                                                         Object.class,
-                                                                         RowBounds.class,
-                                                                         org.apache.ibatis.session.ResultHandler.class}),
-             @Signature(type = Executor.class, method = "update", args = {MappedStatement.class,
-                                                                          Object.class})})
+@Intercepts({@Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}), @Signature(type = StatementHandler.class, method = "update", args = Statement.class), @Signature(type = StatementHandler.class, method = "batch", args = Statement.class)})
 public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
@@ -39,28 +38,28 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
-        this.databaseType = gybytMybatisProperties.getDatabaseType() != null ? gybytMybatisProperties.getDatabaseType()
-                .toLowerCase() : "mysql";
+        this.databaseType = gybytMybatisProperties.getDatabaseType() != null
+                ? gybytMybatisProperties.getDatabaseType().toLowerCase() : "mysql";
         this.sqlPattern = Pattern.compile("^.*?((?:" + gybytMybatisProperties.getSqlPattern() + ").*$)",
                                           Pattern.CASE_INSENSITIVE);
     }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-        // MappedStatement 直接是方法参数，无需反射
-        Object[] args = invocation.getArgs();
-        MappedStatement mappedStatement = (MappedStatement) args[0];
-        Object parameterObject = args.length > 1 ? args[1] : null;
-
+        // 获取实际 StatementHandler
+        Object target = invocation.getTarget();
+        StatementHandler statementHandler = (StatementHandler) target;
         // 计算执行 SQL 耗时
         long start = System.currentTimeMillis();
         Object result = invocation.proceed();
         long end = System.currentTimeMillis();
-
+        // 获取 MappedStatement
+        MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
         String sql = "";
         try {
-            BoundSql boundSql = mappedStatement.getBoundSql(parameterObject);
+            BoundSql boundSql = statementHandler.getBoundSql();
             sql = boundSql.getSql();
+            Object parameterObject = boundSql.getParameterObject();
             if (BaseUtil.isSimpleType(parameterObject)) {
                 sql = sql.replaceFirst("\\?", toStr(parameterObject));
             } else {
@@ -99,7 +98,14 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         } catch (Exception e) {
             log.error("sql处理失败", e);
         }
-        String executeId = mappedStatement.getId();
+        MappedStatement mappedStatement = null;
+        if (metaObject.hasGetter("delegate.mappedStatement")) {
+            mappedStatement = (MappedStatement) metaObject.getValue("delegate.mappedStatement");
+        } else if (metaObject.hasGetter("mappedStatement")) {
+            mappedStatement = (MappedStatement) metaObject.getValue("mappedStatement");
+        }
+        String executeId = BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement)
+                .getId() : "";
         // 处理跳过的包
         for (String skipPackage : gybytMybatisProperties.getSkipPackages()) {
             if (getPattern(skipPackage).matcher(executeId)
@@ -154,8 +160,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         if (o == null) {
             return "null";
         }
-        String simpleName = o.getClass()
-                .getSimpleName();
+        String simpleName = o.getClass().getSimpleName();
         switch (simpleName) {
             case "String":
                 return BaseUtil.format("'{}'", o);
