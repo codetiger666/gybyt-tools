@@ -27,131 +27,184 @@ import java.util.regex.Pattern;
  *
  * @author codetiger
  */
-@Intercepts({@Signature(type = StatementHandler.class, method = "query", args = {Statement.class, ResultHandler.class}), @Signature(type = StatementHandler.class, method = "update", args = Statement.class), @Signature(type = StatementHandler.class, method = "batch", args = Statement.class)})
+@Intercepts({@Signature(type = StatementHandler.class, method = "query", args = {Statement.class,
+                                                                                 ResultHandler.class}),
+             @Signature(type = StatementHandler.class, method = "update", args = Statement.class),
+             @Signature(type = StatementHandler.class, method = "batch", args = Statement.class)})
 public class GybytMybatisSqlLogInterceptor implements Interceptor {
 
     private final Logger log = LoggerFactory.getLogger(GybytMybatisSqlLogInterceptor.class);
     private final Pattern sqlPattern;
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
     private GybytMybatisProperties gybytMybatisProperties;
     private final String databaseType;
     private final static Map<String, Pattern> PATTERN_MAP = new ConcurrentHashMap<>();
 
     public GybytMybatisSqlLogInterceptor(GybytMybatisProperties gybytMybatisProperties) {
         this.gybytMybatisProperties = gybytMybatisProperties;
-        this.databaseType = gybytMybatisProperties.getDatabaseType() != null
-                ? gybytMybatisProperties.getDatabaseType().toLowerCase() : "mysql";
+        this.databaseType = gybytMybatisProperties.getDatabaseType() != null ? gybytMybatisProperties.getDatabaseType()
+                .toLowerCase() : "mysql";
         this.sqlPattern = Pattern.compile("^.*?((?:" + gybytMybatisProperties.getSqlPattern() + ").*$)",
                                           Pattern.CASE_INSENSITIVE);
     }
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-        // 获取实际 StatementHandler
+        // 关闭 sql 日志时直接放行，不做任何处理
+        if (Boolean.FALSE.equals(gybytMybatisProperties.getSqlLog())) {
+            return invocation.proceed();
+        }
+        // 日志级别未开启时直接放行，不做任何处理
+        if (!log.isInfoEnabled()) {
+            return invocation.proceed();
+        }
         Object target = invocation.getTarget();
         StatementHandler statementHandler = (StatementHandler) target;
-        // 计算执行 SQL 耗时
-        long start = System.currentTimeMillis();
-        Object result = invocation.proceed();
-        long end = System.currentTimeMillis();
-        // 获取 MappedStatement
+        // 提前获取 MappedStatement 用于跳过包匹配，避免后续无用处理
         MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
-        String sql = "";
-        try {
-            BoundSql boundSql = statementHandler.getBoundSql();
-            sql = boundSql.getSql();
-            Object parameterObject = boundSql.getParameterObject();
-            if (BaseUtil.isSimpleType(parameterObject)) {
-                sql = sql.replaceFirst("\\?", toStr(parameterObject));
-            } else {
-                for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {
-                    try {
-                        String property = parameterMapping.getProperty();
-                        if (BaseUtil.isEmpty(property)) {
-                            sql = sql.replaceFirst("\\?", toStr(boundSql.getParameterObject()));
-                            continue;
-                        }
-                        String[] propertyArray = property.split("\\.");
-                        Object value = parameterMapping;
-                        int index = 1;
-                        for (String key : propertyArray) {
-                            if (index == 1) {
-                                if (boundSql.hasAdditionalParameter(key)) {
-                                    value = boundSql.getAdditionalParameter(key);
-                                } else {
-                                    value = getData(parameterObject, key);
-                                }
-                            } else {
-                                value = getData(value, key);
-                            }
-                            index++;
-                        }
-                        sql = sql.replaceFirst("\\?", toStr(value));
-                    } catch (Exception ignored) {
-                        log.error("sql处理失败", ignored);
-                    }
-                }
-            }
-            sql = sql.replaceAll("\\s+", " ");
-            Matcher matcher = sqlPattern.matcher(sql);
-            matcher.find();
-            sql = matcher.group(1);
-        } catch (Exception e) {
-            log.error("sql处理失败", e);
-        }
         MappedStatement mappedStatement = null;
         if (metaObject.hasGetter("delegate.mappedStatement")) {
             mappedStatement = (MappedStatement) metaObject.getValue("delegate.mappedStatement");
         } else if (metaObject.hasGetter("mappedStatement")) {
             mappedStatement = (MappedStatement) metaObject.getValue("mappedStatement");
         }
-        String executeId = BaseUtil.isNotEmpty(mappedStatement) ? Objects.requireNonNull(mappedStatement)
-                .getId() : "";
-        // 处理跳过的包
-        for (String skipPackage : gybytMybatisProperties.getSkipPackages()) {
-            if (getPattern(skipPackage).matcher(executeId)
-                    .find()) {
-                return result;
+        String executeId = Objects.nonNull(mappedStatement) ? mappedStatement.getId() : "";
+        // 提前匹配跳过的包，匹配成功则直接放行
+        if (BaseUtil.isNotEmpty(executeId)) {
+            for (String skipPackage : gybytMybatisProperties.getSkipPackages()) {
+                if (getPattern(skipPackage).matcher(executeId)
+                        .find()) {
+                    return invocation.proceed();
+                }
             }
         }
+        // 执行 SQL 并计时
+        long start = System.currentTimeMillis();
+        Object result = invocation.proceed();
+        long end = System.currentTimeMillis();
+        // 判断是否为批量操作
+        boolean isBatch = "batch".equals(invocation.getMethod()
+                                                 .getName());
+        // 拼装完整 SQL（批量操作跳过参数替换，仅输出 SQL 模板以规避反射开销）
+        String sql = isBatch ? buildBatchSql(statementHandler) : buildSql(statementHandler);
         log.info(
                 "\n\n==============  Sql Start  ==============\nExecute ID  ：{}\nExecute SQL ：{}\nExecute Time：{} ms\n==============  Sql  End   ==============\n",
                 executeId, sql, end - start);
         return result;
     }
 
-    private static Pattern getPattern(String str) {
-        Pattern pattern = PATTERN_MAP.get(str);
-        if (pattern != null) {
-            return pattern;
+    /**
+     * 构建批量操作的 SQL 日志，仅输出 SQL 模板，不做参数替换（避免大量反射开销）
+     */
+    private String buildBatchSql(StatementHandler statementHandler) {
+        try {
+            BoundSql boundSql = statementHandler.getBoundSql();
+            return compactSql(boundSql.getSql()) + " [batch]";
+        } catch (Exception e) {
+            log.error("sql处理失败", e);
+            return "";
         }
-        StringBuilder regex = new StringBuilder("^");
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (c == '*') {
-                if (i + 1 < str.length() && str.charAt(i + 1) == '*') {
-                    regex.append(".*");
-                    i++;
-                } else {
-                    regex.append("[^.]+");
-                }
-            } else if (c == '.') {
-                regex.append("\\.");
+    }
+
+    /**
+     * 构建可执行 SQL 语句，将参数占位符替换为实际值
+     */
+    private String buildSql(StatementHandler statementHandler) {
+        try {
+            BoundSql boundSql = statementHandler.getBoundSql();
+            String sql = boundSql.getSql();
+            Object parameterObject = boundSql.getParameterObject();
+            if (Objects.isNull(parameterObject)) {
+                return compactSql(sql);
+            }
+            if (BaseUtil.isSimpleType(parameterObject)) {
+                sql = sql.replaceFirst("\\?", Matcher.quoteReplacement(toStr(parameterObject)));
             } else {
-                if ("\\[]{}()+-^$|".indexOf(c) >= 0) {
-                    regex.append("\\");
+                sql = replaceParameters(sql, boundSql, parameterObject);
+            }
+            return compactSql(sql);
+        } catch (Exception e) {
+            log.error("sql处理失败", e);
+            return "";
+        }
+    }
+
+    /**
+     * 替换 SQL 中的参数占位符为实际参数值
+     */
+    private String replaceParameters(String sql, BoundSql boundSql, Object parameterObject) {
+        for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {
+            try {
+                String property = parameterMapping.getProperty();
+                Object value;
+                if (BaseUtil.isEmpty(property)) {
+                    value = boundSql.getParameterObject();
+                } else {
+                    String[] propertyArray = property.split("\\.");
+                    value = parameterMapping;
+                    for (int i = 0; i < propertyArray.length; i++) {
+                        String key = propertyArray[i];
+                        if (i == 0) {
+                            if (boundSql.hasAdditionalParameter(key)) {
+                                value = boundSql.getAdditionalParameter(key);
+                            } else {
+                                value = getData(parameterObject, key);
+                            }
+                        } else {
+                            value = getData(value, key);
+                        }
+                    }
                 }
-                regex.append(c);
+                sql = sql.replaceFirst("\\?", Matcher.quoteReplacement(toStr(value)));
+            } catch (Exception ignored) {
+                log.error("sql处理失败", ignored);
             }
         }
-        regex.append("$");
-        pattern = Pattern.compile(regex.toString());
-        PATTERN_MAP.put(str, pattern);
-        return pattern;
+        return sql;
+    }
+
+    /**
+     * 压缩 SQL 中的空白字符，并提取有效 SQL 片段
+     */
+    private String compactSql(String sql) {
+        String compacted = WHITESPACE_PATTERN.matcher(sql)
+                .replaceAll(" ");
+        Matcher matcher = sqlPattern.matcher(compacted);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return compacted;
+    }
+
+    private static Pattern getPattern(String str) {
+        return PATTERN_MAP.computeIfAbsent(str, key -> {
+            StringBuilder regex = new StringBuilder("^");
+            for (int i = 0; i < key.length(); i++) {
+                char c = key.charAt(i);
+                if (c == '*') {
+                    if (i + 1 < key.length() && key.charAt(i + 1) == '*') {
+                        regex.append(".*");
+                        i++;
+                    } else {
+                        regex.append("[^.]+");
+                    }
+                } else if (c == '.') {
+                    regex.append("\\.");
+                } else {
+                    if ("\\[]{}()+-^$|".indexOf(c) >= 0) {
+                        regex.append("\\");
+                    }
+                    regex.append(c);
+                }
+            }
+            regex.append("$");
+            return Pattern.compile(regex.toString());
+        });
     }
 
     private Object getData(Object o, String key) {
         if (o instanceof Map) {
-            return ((Map) o).get(key);
+            return ((Map<?, ?>) o).get(key);
         }
         return ReflectUtil.getFieldValueByFieldName(o, key);
     }
@@ -160,7 +213,8 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         if (o == null) {
             return "null";
         }
-        String simpleName = o.getClass().getSimpleName();
+        String simpleName = o.getClass()
+                .getSimpleName();
         switch (simpleName) {
             case "String":
                 return BaseUtil.format("'{}'", o);
@@ -173,7 +227,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             case "LocalDateTime":
                 return formatDateValue(o, "timestamp");
             default:
-                return BaseUtil.toStr(o);
+                return BaseUtil.format("'{}'", BaseUtil.toStr(o));
         }
     }
 
