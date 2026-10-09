@@ -17,6 +17,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: '3.9.16'
+
+      - name: Verify Maven version
+        run: mvn -version
+
       - name: Setup Maven settings
         run: |
           mkdir -p ~/.m2
