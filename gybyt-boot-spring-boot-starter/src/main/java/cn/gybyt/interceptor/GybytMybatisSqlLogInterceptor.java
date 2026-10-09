@@ -15,9 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Statement;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -118,7 +116,7 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
                 return compactSql(sql);
             }
             if (BaseUtil.isSimpleType(parameterObject)) {
-                sql = sql.replaceFirst("\\?", Matcher.quoteReplacement(toStr(parameterObject)));
+                sql = replaceValues(sql, Collections.singletonList(parameterObject));
             } else {
                 sql = replaceParameters(sql, boundSql, parameterObject);
             }
@@ -133,6 +131,8 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
      * 替换 SQL 中的参数占位符为实际参数值
      */
     private String replaceParameters(String sql, BoundSql boundSql, Object parameterObject) {
+        List<Object> values = new ArrayList<>(boundSql.getParameterMappings()
+                .size());
         for (ParameterMapping parameterMapping : boundSql.getParameterMappings()) {
             try {
                 String property = parameterMapping.getProperty();
@@ -155,12 +155,27 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
                         }
                     }
                 }
-                sql = sql.replaceFirst("\\?", Matcher.quoteReplacement(toStr(value)));
-            } catch (Exception ignored) {
-                log.error("sql处理失败", ignored);
+                values.add(value);
+            } catch (Exception ignore) {
+                values.add(null);
             }
         }
-        return sql;
+        return replaceValues(sql, values);
+    }
+
+    /**
+     * 按占位符在原始 SQL 中的位置依次替换参数值，避免参数值本身包含 ? 时被误认为占位符
+     */
+    private String replaceValues(String sql, List<Object> values) {
+        String[] parts = sql.split("\\?", -1);
+        StringBuilder sb = new StringBuilder(sql.length());
+        for (int i = 0; i < parts.length; i++) {
+            sb.append(parts[i]);
+            if (i < parts.length - 1) {
+                sb.append(i < values.size() ? toStr(values.get(i)) : "?");
+            }
+        }
+        return sb.toString();
     }
 
     /**
