@@ -14,6 +14,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Proxy;
 import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,6 +66,9 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
             mappedStatement = (MappedStatement) metaObject.getValue("delegate.mappedStatement");
         } else if (metaObject.hasGetter("mappedStatement")) {
             mappedStatement = (MappedStatement) metaObject.getValue("mappedStatement");
+        }
+        if (mappedStatement == null && Proxy.isProxyClass(statementHandler.getClass())) {
+            mappedStatement = (MappedStatement) SystemMetaObject.forObject(Proxy.getInvocationHandler(statementHandler)).getValue("target.delegate.mappedStatement");
         }
         String executeId = Objects.nonNull(mappedStatement) ? mappedStatement.getId() : "";
         // 提前匹配跳过的包，匹配成功则直接放行
