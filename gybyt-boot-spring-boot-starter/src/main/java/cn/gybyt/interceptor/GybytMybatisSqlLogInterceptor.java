@@ -232,6 +232,9 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
         if (o == null) {
             return "null";
         }
+        if (o instanceof Number) {
+            return BaseUtil.format("{}", o);
+        }
         String simpleName = o.getClass()
                 .getSimpleName();
         switch (simpleName) {
