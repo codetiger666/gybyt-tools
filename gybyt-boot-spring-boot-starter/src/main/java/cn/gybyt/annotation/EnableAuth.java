@@ -1,8 +1,7 @@
 package cn.gybyt.annotation;
 
-import cn.gybyt.config.AuthServletConfig;
+import cn.gybyt.config.AuthConfig;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,7 +18,6 @@ import java.lang.annotation.Target;
  **/
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Import({AuthServletConfig.class})
-@EnableWebSecurity
-public @interface EnableAuthFilter {
+@Import({AuthConfig.class})
+public @interface EnableAuth {
 }
