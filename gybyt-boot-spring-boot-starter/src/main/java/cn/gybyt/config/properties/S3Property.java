@@ -13,7 +13,7 @@ import software.amazon.awssdk.regions.Region;
  * @create: 2023/12/31 18:44
  **/
 @Configuration
-@ConfigurationProperties(prefix = "upload.s3")
+@ConfigurationProperties(prefix = "gybyt.upload.s3")
 public class S3Property {
     /**
      * 服务器地址

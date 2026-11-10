@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  **/
 @Configuration
 @Component
-@ConfigurationProperties(prefix = "upload")
+@ConfigurationProperties(prefix = "gybyt.upload")
 public class FileUploadProperty {
 
     /**

@@ -1,6 +1,9 @@
 package cn.gybyt.util;
 
-import cn.gybyt.config.properties.JwtProperties;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.context.model.SaStorage;
+import cn.gybyt.config.properties.AuthProperty;
+import cn.gybyt.dto.AuthUser;
 
 /**
  * 验证工具类
@@ -12,22 +15,18 @@ import cn.gybyt.config.properties.JwtProperties;
  **/
 public class AuthUtil {
 
-    private static JwtProperties JWT_PROPERTIES;
+    public static final String LOGIN_USER_KEY = "loginUser";
+    public static final String USER_KEY = "userId";
+    public static final String CLIENT_KEY = "clientId";
+    private static AuthProperty JWT_PROPERTIES;
 
     static {
-        JWT_PROPERTIES = SpringUtil.getBean(JwtProperties.class);
+        JWT_PROPERTIES = SpringUtil.getBean(AuthProperty.class);
     }
 
-    public static String getUsername() {
-        String token = SpringUtil.getRequestHeader(JWT_PROPERTIES.getHeader());
-        if (BaseUtil.isEmpty(token)) {
-            throw new BaseException("获取认证信息失败");
-        }
-        String username = JwtUtil.validateToken(token);
-        if (BaseUtil.isEmpty(username)) {
-            throw new BaseException("获取用户名失败");
-        }
-        return username;
+    public static AuthUser getLoginUser() {
+        SaStorage storage = SaHolder.getStorage();
+        return (AuthUser) storage.get(LOGIN_USER_KEY);
     }
 
 }

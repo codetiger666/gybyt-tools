@@ -96,12 +96,17 @@ public class GybytMybatisSqlLogInterceptor implements Interceptor {
     }
 
     /**
-     * 构建批量操作的 SQL 日志，仅输出 SQL 模板，不做参数替换（避免大量反射开销）
+     * 构建批量操作的 SQL 日志，占位符数量在阈值内时填充参数，超过阈值则降级为仅输出 SQL 模板（规避大量反射开销）
      */
     private String buildBatchSql(StatementHandler statementHandler) {
         try {
             BoundSql boundSql = statementHandler.getBoundSql();
-            return compactSql(boundSql.getSql()) + " [batch]";
+            int placeholderCount = boundSql.getParameterMappings()
+                    .size();
+            if (placeholderCount > gybytMybatisProperties.getBatchFillMaxPlaceholders()) {
+                return compactSql(boundSql.getSql()) + " [batch]";
+            }
+            return buildSql(statementHandler) + " [batch]";
         } catch (Exception e) {
             log.error("sql处理失败", e);
             return "";
