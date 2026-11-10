@@ -46,5 +46,9 @@ public class GybytMybatisProperties {
      * 数据库类型，支持 mysql、postgresql、oracle，默认 mysql
      */
     private String databaseType = "mysql";
+    /**
+     * 批量操作填充参数的最大占位符数量，超过该值则降级为仅输出 SQL 模板，默认 50
+     */
+    private Integer batchFillMaxPlaceholders = 50;
 
 }
