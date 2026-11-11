@@ -15,7 +15,7 @@ import cn.dev33.satoken.util.SaResult;
 import cn.gybyt.config.properties.AuthProperty;
 import cn.gybyt.satoken.GybytTokenDao;
 import cn.gybyt.satoken.GybytTokenPermission;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
