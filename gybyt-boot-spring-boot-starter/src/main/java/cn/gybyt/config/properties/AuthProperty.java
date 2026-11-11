@@ -43,6 +43,11 @@ public class AuthProperty {
     private Integer freezeTime = -1;
 
     /**
+     * token前缀
+     */
+    private String prefix = "Bearer";
+
+    /**
      * jwt密钥
      */
     private String secretKey = "123456";

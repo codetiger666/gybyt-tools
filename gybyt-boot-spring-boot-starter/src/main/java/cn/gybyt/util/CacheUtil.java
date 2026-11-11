@@ -166,15 +166,101 @@ public class CacheUtil {
      * @param <T> 泛型
      */
     public static <T> T get(String key, Class<T> clazz) {
-        T t;
+        Object value;
         try {
-            t = (T) redisTemplate.opsForValue()
+            value = redisTemplate.opsForValue()
                     .get(key);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue()
+            value = stringRedisTemplate.opsForValue()
                     .get(key);
         }
-        return t;
+        return convertValue(value, clazz);
+    }
+
+    /**
+     * 获取缓存
+     * @param cacheName 缓存名称
+     * @param preKey 缓存key前缀
+     * @param key 缓存key
+     * @param clazz 返回类型
+     * @return 返回值
+     * @param <T> 泛型
+     */
+    public static <T> T get(String cacheName, String preKey, String key, Class<T> clazz) {
+        Object value;
+        try {
+            value = redisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
+        } catch (SerializationException e) {
+            value = stringRedisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
+        }
+        return convertValue(value, clazz);
+    }
+
+    /**
+     * 将 Redis 读取到的值安全转换为目标类型
+     * @param value 原始值
+     * @param clazz 目标类型
+     * @return 转换后的值
+     * @param <T> 泛型
+     */
+    private static <T> T convertValue(Object value, Class<T> clazz) {
+        if (BaseUtil.isNull(value) || clazz == null || clazz == Object.class) {
+            return (T) value;
+        }
+        if (String.class.equals(clazz)) {
+            return clazz.cast(String.valueOf(value));
+        }
+        if (clazz.isInstance(value)) {
+            return clazz.cast(value);
+        }
+        if (value instanceof Number) {
+            Number num = (Number) value;
+            if (clazz == Long.class || clazz == long.class) {
+                return clazz.cast(num.longValue());
+            }
+            if (clazz == Integer.class || clazz == int.class) {
+                return clazz.cast(num.intValue());
+            }
+            if (clazz == Double.class || clazz == double.class) {
+                return clazz.cast(num.doubleValue());
+            }
+            if (clazz == Float.class || clazz == float.class) {
+                return clazz.cast(num.floatValue());
+            }
+            if (clazz == Short.class || clazz == short.class) {
+                return clazz.cast(num.shortValue());
+            }
+            if (clazz == Byte.class || clazz == byte.class) {
+                return clazz.cast(num.byteValue());
+            }
+        }
+        if (value instanceof String) {
+            String str = (String) value;
+            if (clazz == Long.class || clazz == long.class) {
+                return clazz.cast(Long.valueOf(str));
+            }
+            if (clazz == Integer.class || clazz == int.class) {
+                return clazz.cast(Integer.valueOf(str));
+            }
+            if (clazz == Double.class || clazz == double.class) {
+                return clazz.cast(Double.valueOf(str));
+            }
+            if (clazz == Float.class || clazz == float.class) {
+                return clazz.cast(Float.valueOf(str));
+            }
+            if (clazz == Short.class || clazz == short.class) {
+                return clazz.cast(Short.valueOf(str));
+            }
+            if (clazz == Byte.class || clazz == byte.class) {
+                return clazz.cast(Byte.valueOf(str));
+            }
+            if (clazz == Boolean.class || clazz == boolean.class) {
+                return clazz.cast(Boolean.valueOf(str));
+            }
+        }
+        return (T) value;
     }
 
     /**

@@ -6,7 +6,7 @@
     <parent>
         <groupId>cn.gybyt</groupId>
         <artifactId>gybyt-bom</artifactId>
-        <version>3.0.0.4</version>
+        <version>3.0.0.5</version>
     </parent>
 
     <artifactId>gybyt-boot-spring-boot-starter</artifactId>
@@ -56,7 +56,7 @@
         <!--jwt-->
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-spring-boot-starter</artifactId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

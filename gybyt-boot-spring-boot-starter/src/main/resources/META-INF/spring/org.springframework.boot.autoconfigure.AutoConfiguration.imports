@@ -6,4 +6,5 @@ cn.gybyt.config.RequestServletConfig
 cn.gybyt.config.GybytMybatisConfig
 cn.gybyt.config.SpringUtilConfig
 cn.gybyt.config.FileUploadConfig
-cn.gybyt.service.impl.GybytUserManageServiceImpl
+cn.gybyt.advice.GybytServletControllerExceptionAdvice
+cn.gybyt.advice.GybytServletControllerTokenExceptionAdvice

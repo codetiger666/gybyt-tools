@@ -1,6 +1,9 @@
 package cn.gybyt.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
@@ -10,6 +13,9 @@ import java.util.Set;
  * @author: codetiger
  **/
 @Data
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuthUser {
 
     /**
@@ -21,6 +27,11 @@ public class AuthUser {
      * 用户名
      */
     private String userName;
+
+    /**
+     * 设备类型
+     */
+    private String deviceType;
 
     /**
      * 角色列表

@@ -15,6 +15,7 @@ import cn.dev33.satoken.util.SaResult;
 import cn.gybyt.config.properties.AuthProperty;
 import cn.gybyt.satoken.GybytTokenDao;
 import cn.gybyt.satoken.GybytTokenPermission;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Resource;
 
 /**
  * 认证配置
@@ -38,17 +38,20 @@ public class AuthConfig implements WebMvcConfigurer {
 
     @Bean
     @Primary
-    public SaTokenConfig getSaTokenConfig() {
+    public SaTokenConfig saTokenConfig() {
         SaTokenConfig config = new SaTokenConfig();
         config.setTokenName(authProperty.getHeader());
         config.setTimeout(authProperty.getExpireTime() * 60L);
-        config.setActiveTimeout(authProperty.getFreezeTime() * 60L);
+        if (-1 != authProperty.getFreezeTime()) {
+            config.setActiveTimeout(authProperty.getFreezeTime() * 60L);
+        }
         config.setIsConcurrent(true);
         config.setIsShare(false);
         config.setTokenStyle("uuid");
         config.setIsReadCookie(false);
         config.setIsPrint(false);
         config.setIsLog(false);
+        config.setTokenPrefix(authProperty.getPrefix());
         config.setJwtSecretKey(authProperty.getSecretKey());
         return config;
     }
