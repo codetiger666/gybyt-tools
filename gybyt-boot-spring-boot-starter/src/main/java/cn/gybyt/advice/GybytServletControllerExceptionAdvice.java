@@ -42,7 +42,7 @@ public class GybytServletControllerExceptionAdvice {
         LoggerUtil.handleException(log, e);
         log.error(e.getMessage(), e);
         // 返回异常信息
-        return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.OK);
     }
 
     /**
@@ -59,6 +59,6 @@ public class GybytServletControllerExceptionAdvice {
         LoggerUtil.handleException(log, e);
         // 打印错误信息
         log.error(e.getMsg(), e);
-        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, e.getHttpStatus());
+        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.OK);
     }
 }

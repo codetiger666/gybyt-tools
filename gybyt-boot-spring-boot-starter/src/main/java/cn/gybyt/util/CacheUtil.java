@@ -3,10 +3,7 @@ package cn.gybyt.util;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -42,16 +39,19 @@ public class CacheUtil {
     public static <T> T get(String cacheName, String preKey, String key, Callable<T> callable, Long timeout) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) redisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 set(genKey(cacheName, preKey, key), t, timeout);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -67,16 +67,19 @@ public class CacheUtil {
     public static <T> T get(String cacheName, String preKey, String key, Callable<T> callable) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) redisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 set(genKey(cacheName, preKey, key), t, null);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -91,9 +94,11 @@ public class CacheUtil {
     public static <T> T get(String cacheName, String preKey, String key) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) redisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(genKey(cacheName, preKey, key));
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
         }
         return t;
     }
@@ -109,16 +114,19 @@ public class CacheUtil {
     public static <T> T get(String key, Callable<T> callable, Long timeout) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(key);
+            t = (T) redisTemplate.opsForValue()
+                    .get(key);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(key);
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(key);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 set(key, t, timeout);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -133,17 +141,126 @@ public class CacheUtil {
     public static <T> T get(String key, Callable<T> callable) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(key);
+            t = (T) redisTemplate.opsForValue()
+                    .get(key);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(key);
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(key);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 set(key, t, null);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
+    }
+
+
+    /**
+     * 获取缓存
+     * @param key 缓存key
+     * @param clazz 返回类型
+     * @return 返回值
+     * @param <T> 泛型
+     */
+    public static <T> T get(String key, Class<T> clazz) {
+        Object value;
+        try {
+            value = redisTemplate.opsForValue()
+                    .get(key);
+        } catch (SerializationException e) {
+            value = stringRedisTemplate.opsForValue()
+                    .get(key);
+        }
+        return convertValue(value, clazz);
+    }
+
+    /**
+     * 获取缓存
+     * @param cacheName 缓存名称
+     * @param preKey 缓存key前缀
+     * @param key 缓存key
+     * @param clazz 返回类型
+     * @return 返回值
+     * @param <T> 泛型
+     */
+    public static <T> T get(String cacheName, String preKey, String key, Class<T> clazz) {
+        Object value;
+        try {
+            value = redisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
+        } catch (SerializationException e) {
+            value = stringRedisTemplate.opsForValue()
+                    .get(genKey(cacheName, preKey, key));
+        }
+        return convertValue(value, clazz);
+    }
+
+    /**
+     * 将 Redis 读取到的值安全转换为目标类型
+     * @param value 原始值
+     * @param clazz 目标类型
+     * @return 转换后的值
+     * @param <T> 泛型
+     */
+    private static <T> T convertValue(Object value, Class<T> clazz) {
+        if (BaseUtil.isNull(value) || clazz == null || clazz == Object.class) {
+            return (T) value;
+        }
+        if (String.class.equals(clazz)) {
+            return clazz.cast(String.valueOf(value));
+        }
+        if (clazz.isInstance(value)) {
+            return clazz.cast(value);
+        }
+        if (value instanceof Number) {
+            Number num = (Number) value;
+            if (clazz == Long.class || clazz == long.class) {
+                return clazz.cast(num.longValue());
+            }
+            if (clazz == Integer.class || clazz == int.class) {
+                return clazz.cast(num.intValue());
+            }
+            if (clazz == Double.class || clazz == double.class) {
+                return clazz.cast(num.doubleValue());
+            }
+            if (clazz == Float.class || clazz == float.class) {
+                return clazz.cast(num.floatValue());
+            }
+            if (clazz == Short.class || clazz == short.class) {
+                return clazz.cast(num.shortValue());
+            }
+            if (clazz == Byte.class || clazz == byte.class) {
+                return clazz.cast(num.byteValue());
+            }
+        }
+        if (value instanceof String) {
+            String str = (String) value;
+            if (clazz == Long.class || clazz == long.class) {
+                return clazz.cast(Long.valueOf(str));
+            }
+            if (clazz == Integer.class || clazz == int.class) {
+                return clazz.cast(Integer.valueOf(str));
+            }
+            if (clazz == Double.class || clazz == double.class) {
+                return clazz.cast(Double.valueOf(str));
+            }
+            if (clazz == Float.class || clazz == float.class) {
+                return clazz.cast(Float.valueOf(str));
+            }
+            if (clazz == Short.class || clazz == short.class) {
+                return clazz.cast(Short.valueOf(str));
+            }
+            if (clazz == Byte.class || clazz == byte.class) {
+                return clazz.cast(Byte.valueOf(str));
+            }
+            if (clazz == Boolean.class || clazz == boolean.class) {
+                return clazz.cast(Boolean.valueOf(str));
+            }
+        }
+        return (T) value;
     }
 
     /**
@@ -155,9 +272,11 @@ public class CacheUtil {
     public static <T> T get(String key) {
         T t;
         try {
-            t = (T) redisTemplate.opsForValue().get(key);
+            t = (T) redisTemplate.opsForValue()
+                    .get(key);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForValue().get(key);
+            t = (T) stringRedisTemplate.opsForValue()
+                    .get(key);
         }
         return t;
     }
@@ -172,9 +291,11 @@ public class CacheUtil {
     public static <T> T getHash(String key, Object hashKey) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(key, hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(key, hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(key, hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(key, hashKey);
         }
         return t;
     }
@@ -190,16 +311,19 @@ public class CacheUtil {
     public static <T> T getHash(String key, Object hashKey, Callable<T> callable) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(key, hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(key, hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(key, hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(key, hashKey);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 setHash(key, hashKey, t, null);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -215,16 +339,19 @@ public class CacheUtil {
     public static <T> T getHash(String key, Object hashKey, Callable<T> callable, Long timeout) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(key, hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(key, hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(key, hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(key, hashKey);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 setHash(key, hashKey, t, timeout);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -238,12 +365,15 @@ public class CacheUtil {
     public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         }
         return t;
     }
+
     /**
      * 获取Hash缓存
      * @param key 缓存key
@@ -255,18 +385,22 @@ public class CacheUtil {
     public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey, Callable<T> callable) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 setHash(key, hashKey, t, null);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
+
     /**
      * 获取Hash缓存
      * @param key 缓存key
@@ -276,19 +410,23 @@ public class CacheUtil {
      * @return 返回值
      * @param <T> 泛型
      */
-    public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey, Callable<T> callable, Long timeout) {
+    public static <T> T getHash(String cacheName, String preKey, String key, Object hashKey, Callable<T> callable,
+                                Long timeout) {
         T t;
         try {
-            t = (T) redisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) redisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         } catch (SerializationException e) {
-            t = (T) stringRedisTemplate.opsForHash().get(genKey(cacheName, preKey, key), hashKey);
+            t = (T) stringRedisTemplate.opsForHash()
+                    .get(genKey(cacheName, preKey, key), hashKey);
         }
         try {
             if (BaseUtil.isNull(t)) {
                 t = callable.call();
                 setHash(key, hashKey, t, timeout);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return t;
     }
 
@@ -307,17 +445,21 @@ public class CacheUtil {
         }
         if (timeout == -1L) {
             if (o instanceof String) {
-                stringRedisTemplate.opsForValue().set(key, o);
+                stringRedisTemplate.opsForValue()
+                        .set(key, o);
                 return;
             }
-            redisTemplate.opsForValue().set(key, o);
+            redisTemplate.opsForValue()
+                    .set(key, o);
             return;
         }
         if (o instanceof String) {
-            stringRedisTemplate.opsForValue().set(key, o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+            stringRedisTemplate.opsForValue()
+                    .set(key, o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
             return;
         }
-        redisTemplate.opsForValue().set(key, o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue()
+                .set(key, o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -330,10 +472,12 @@ public class CacheUtil {
             return;
         }
         if (o instanceof String) {
-            stringRedisTemplate.opsForValue().set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+            stringRedisTemplate.opsForValue()
+                    .set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
             return;
         }
-        redisTemplate.opsForValue().set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue()
+                .set(key, o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -348,10 +492,13 @@ public class CacheUtil {
             return;
         }
         if (o instanceof String) {
-            stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+            stringRedisTemplate.opsForValue()
+                    .set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L),
+                         TimeUnit.MILLISECONDS);
             return;
         }
-        redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue()
+                .set(genKey(cacheName, preKey, key), o, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -370,17 +517,21 @@ public class CacheUtil {
         }
         if (timeout == -1L) {
             if (o instanceof String) {
-                stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o);
+                stringRedisTemplate.opsForValue()
+                        .set(genKey(cacheName, preKey, key), o);
                 return;
             }
-            redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o);
+            redisTemplate.opsForValue()
+                    .set(genKey(cacheName, preKey, key), o);
             return;
         }
         if (o instanceof String) {
-            stringRedisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+            stringRedisTemplate.opsForValue()
+                    .set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
             return;
         }
-        redisTemplate.opsForValue().set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue()
+                .set(genKey(cacheName, preKey, key), o, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -398,19 +549,23 @@ public class CacheUtil {
         }
         if (timeout == -1L) {
             if (o instanceof String) {
-                stringRedisTemplate.opsForHash().put(key, hashKey, o);
+                stringRedisTemplate.opsForHash()
+                        .put(key, hashKey, o);
                 return;
             }
-            redisTemplate.opsForHash().put(key, hashKey, o);
+            redisTemplate.opsForHash()
+                    .put(key, hashKey, o);
             redisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
             return;
         }
         if (o instanceof String) {
-            stringRedisTemplate.opsForHash().put(key, hashKey, o);
+            stringRedisTemplate.opsForHash()
+                    .put(key, hashKey, o);
             stringRedisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
             return;
         }
-        redisTemplate.opsForHash().put(key, hashKey, o);
+        redisTemplate.opsForHash()
+                .put(key, hashKey, o);
         redisTemplate.expire(key, genRandomTimeout(timeout), TimeUnit.MILLISECONDS);
     }
 
@@ -420,7 +575,8 @@ public class CacheUtil {
      * @return
      */
     public static Long getHashSize(String key) {
-        return redisTemplate.opsForHash().size(key);
+        return redisTemplate.opsForHash()
+                .size(key);
     }
 
     /**
@@ -431,9 +587,11 @@ public class CacheUtil {
      */
     public static <T, R> Map<T, R> getHashMap(String key) {
         try {
-            return redisTemplate.opsForHash().entries(key);
+            return redisTemplate.opsForHash()
+                    .entries(key);
         } catch (SerializationException e) {
-            return stringRedisTemplate.opsForHash().entries(key);
+            return stringRedisTemplate.opsForHash()
+                    .entries(key);
         }
     }
 
@@ -446,7 +604,8 @@ public class CacheUtil {
         if (BaseUtil.isNull(o)) {
             return;
         }
-        redisTemplate.opsForHash().put(key, hashKey, o);
+        redisTemplate.opsForHash()
+                .put(key, hashKey, o);
         redisTemplate.expire(key, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
     }
 
@@ -463,7 +622,8 @@ public class CacheUtil {
         if (BaseUtil.isNull(timeout)) {
             timeout = 24 * 60 * 60 * 1000L;
         }
-        redisTemplate.opsForHash().putAll(key, map);
+        redisTemplate.opsForHash()
+                .putAll(key, map);
         if (timeout == -1L) {
             return;
         }
@@ -479,7 +639,8 @@ public class CacheUtil {
         if (BaseUtil.isNull(map)) {
             return;
         }
-        redisTemplate.opsForHash().putAll(key, map);
+        redisTemplate.opsForHash()
+                .putAll(key, map);
         redisTemplate.expire(key, genRandomTimeout(24 * 60 * 60 * 1000L), TimeUnit.MILLISECONDS);
     }
 
@@ -508,7 +669,8 @@ public class CacheUtil {
      * @return
      */
     public static Boolean hasHashKey(String key, Object hashKey) {
-        return redisTemplate.opsForHash().hasKey(key, hashKey);
+        return redisTemplate.opsForHash()
+                .hasKey(key, hashKey);
     }
 
     /**
@@ -520,7 +682,8 @@ public class CacheUtil {
      * @return
      */
     public static Boolean hasHashKey(String cacheName, String preKey, String key, Object hashKey) {
-        return redisTemplate.opsForHash().hasKey(genKey(cacheName, preKey, key), hashKey);
+        return redisTemplate.opsForHash()
+                .hasKey(genKey(cacheName, preKey, key), hashKey);
     }
 
     /**
@@ -565,7 +728,8 @@ public class CacheUtil {
      * @param hashKey hash key
      */
     public static void removeHash(String key, Object hashKey) {
-        redisTemplate.opsForHash().delete(key, hashKey);
+        redisTemplate.opsForHash()
+                .delete(key, hashKey);
     }
 
     /**
@@ -574,7 +738,8 @@ public class CacheUtil {
      * @param hashKey hash key
      */
     public static void removeHash(String key, List<Object> hashKey) {
-        redisTemplate.opsForHash().delete(key, hashKey);
+        redisTemplate.opsForHash()
+                .delete(key, hashKey);
     }
 
     /**
@@ -585,7 +750,8 @@ public class CacheUtil {
      * @param preKey 缓存前缀
      */
     public static void removeHash(String cacheName, String preKey, String key, List<Object> hashKey) {
-        redisTemplate.opsForHash().delete(genKey(cacheName, preKey, key), hashKey);
+        redisTemplate.opsForHash()
+                .delete(genKey(cacheName, preKey, key), hashKey);
     }
 
     /**
@@ -596,7 +762,26 @@ public class CacheUtil {
      * @param preKey 缓存前缀
      */
     public static void removeHash(String cacheName, String preKey, String key, Object hashKey) {
-        redisTemplate.opsForHash().delete(genKey(cacheName, preKey, key), hashKey);
+        redisTemplate.opsForHash()
+                .delete(genKey(cacheName, preKey, key), hashKey);
+    }
+
+    /**
+     * 获取缓存过期时间(毫秒)
+     * @param key 缓存key
+     * @return 过期时间
+     */
+    public static Long getExpire(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 设置缓存过期时间(毫秒)
+     * @param key 缓存key
+     * @param timeout 过期时间
+     */
+    public static void setExpire(String key, Long timeout) {
+        redisTemplate.expire(key, timeout, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -634,5 +819,14 @@ public class CacheUtil {
     private static long genRandomTimeout(Long timeout) {
         Random random = new Random();
         return timeout + random.nextInt(1000);
+    }
+
+    /**
+     * 获取所有key
+     * @param key 缓存key
+     * @return 所有key
+     */
+    public static Set<String> keys(String key) {
+        return redisTemplate.keys(key);
     }
 }

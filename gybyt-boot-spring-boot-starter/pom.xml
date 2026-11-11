@@ -35,12 +35,6 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <optional>true</optional>
         </dependency>
-        <!--security-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-            <optional>true</optional>
-        </dependency>
         <!--生成元数据-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -61,8 +55,13 @@
         </dependency>
         <!--jwt-->
         <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot-starter</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-jwt</artifactId>
             <optional>true</optional>
         </dependency>
         <!--mybatis-->
