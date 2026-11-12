@@ -1,6 +1,8 @@
 package cn.gybyt.advice;
 
-import cn.gybyt.util.*;
+import cn.gybyt.util.BaseException;
+import cn.gybyt.util.BaseResponse;
+import cn.gybyt.util.HttpStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -39,7 +41,6 @@ public class GybytServletControllerExceptionAdvice {
         // 设置响应为JSON格式
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        LoggerUtil.handleException(log, e);
         log.error(e.getMessage(), e);
         // 返回异常信息
         return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.OK);
@@ -56,7 +57,6 @@ public class GybytServletControllerExceptionAdvice {
         // 设置响应为JSON格式
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        LoggerUtil.handleException(log, e);
         // 打印错误信息
         log.error(e.getMsg(), e);
         return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.OK);

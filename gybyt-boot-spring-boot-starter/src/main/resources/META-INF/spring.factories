@@ -6,6 +6,4 @@ cn.gybyt.config.RedisConfig,\
 cn.gybyt.config.RequestServletConfig,\
 cn.gybyt.config.GybytMybatisConfig,\
 cn.gybyt.config.SpringUtilConfig,\
-cn.gybyt.config.FileUploadConfig,\
-cn.gybyt.advice.GybytServletControllerExceptionAdvice,\
-cn.gybyt.advice.GybytServletControllerTokenExceptionAdvice
+cn.gybyt.config.FileUploadConfig
