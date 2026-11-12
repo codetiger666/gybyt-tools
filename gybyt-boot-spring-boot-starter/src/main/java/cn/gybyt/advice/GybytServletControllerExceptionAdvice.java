@@ -1,12 +1,9 @@
 package cn.gybyt.advice;
 
-import cn.gybyt.util.BaseException;
 import cn.gybyt.util.BaseResponse;
 import cn.gybyt.util.HttpStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +22,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @create: 2022/7/20 19:29
  **/
 @RestControllerAdvice
-@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GybytServletControllerExceptionAdvice {
 
     private final Logger log = LoggerFactory.getLogger(GybytServletControllerExceptionAdvice.class);
@@ -46,19 +42,4 @@ public class GybytServletControllerExceptionAdvice {
         return new ResponseEntity<>(BaseResponse.failure(HttpStatusEnum.SERVERERROR.value(), e.getMessage()), headers, HttpStatus.OK);
     }
 
-    /**
-     * 处理自定义异常
-     *
-     * @param e 异常信息
-     * @return 自定义返回信息
-     */
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<Object> apiExceptionHandler(BaseException e) {
-        // 设置响应为JSON格式
-        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        // 打印错误信息
-        log.error(e.getMsg(), e);
-        return new ResponseEntity<>(BaseResponse.failure(e.getCode(), e.getMsg()), headers, HttpStatus.OK);
-    }
 }
