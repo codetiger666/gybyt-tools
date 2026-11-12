@@ -1,8 +1,11 @@
 package cn.gybyt.advice;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.gybyt.util.BaseResponse;
 import cn.gybyt.util.HttpStatusEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +17,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * token错误处理
  *
@@ -21,7 +26,29 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  **/
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
+@Slf4j
 public class GybytServletControllerTokenExceptionAdvice {
+
+    /**
+     * 权限码异常
+     */
+    @ExceptionHandler(NotPermissionException.class)
+    public ResponseEntity<Object> handleNotPermissionException(NotPermissionException e, HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        log.error("请求地址'{}',权限码校验失败'{}'", requestURI, e.getMessage());
+        return new ResponseEntity<>(BaseResponse.failure(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"),
+                                    HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * 角色权限异常
+     */
+    @ExceptionHandler(NotRoleException.class)
+    public ResponseEntity<Object> handleNotRoleException(NotRoleException e, HttpServletRequest request) {
+        log.error("请求地址'{}',角色权限校验失败'{}'", request.getRequestURI(), e.getMessage());
+        return new ResponseEntity<>(BaseResponse.failure(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"),
+                                    HttpStatus.FORBIDDEN);
+    }
 
     /**
      * 处理token全局异常

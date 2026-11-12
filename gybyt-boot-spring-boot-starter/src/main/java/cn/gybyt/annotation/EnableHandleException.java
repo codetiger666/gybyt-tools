@@ -1,5 +1,6 @@
 package cn.gybyt.annotation;
 
+import cn.gybyt.advice.GybytServletControllerBaseExceptionAdvice;
 import cn.gybyt.advice.GybytServletControllerExceptionAdvice;
 import cn.gybyt.advice.GybytServletControllerTokenExceptionAdvice;
 import org.springframework.context.annotation.Import;
@@ -19,6 +20,8 @@ import java.lang.annotation.Target;
  **/
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Import({GybytServletControllerExceptionAdvice.class, GybytServletControllerTokenExceptionAdvice.class})
+@Import({GybytServletControllerExceptionAdvice.class,
+         GybytServletControllerBaseExceptionAdvice.class,
+         GybytServletControllerTokenExceptionAdvice.class})
 public @interface EnableHandleException {
 }
