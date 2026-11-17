@@ -61,6 +61,7 @@
         <slf4j.version>1.7.36</slf4j.version>
         <springboot.version>2.6.13</springboot.version>
         <springcloud.version>2021.0.5</springcloud.version>
+        <flatten-maven-plugin.version>1.9.0</flatten-maven-plugin.version>
         <springcloud.alibaba.version>2021.0.5.0</springcloud.alibaba.version>
         <fastjson.version>2.0.39</fastjson.version>
         <sa-token.version>1.46.0</sa-token.version>
@@ -213,6 +214,30 @@
                         <execution>
                             <goals>
                                 <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${flatten-maven-plugin.version}</version>
+                    <configuration>
+                    </configuration>
+                    <executions>
+                        <!-- enable flattening -->
+                        <execution>
+                            <id>flatten</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>flatten</goal>
+                            </goals>
+                        </execution>
+                        <!-- ensure proper cleanup -->
+                        <execution>
+                            <id>flatten.clean</id>
+                            <goals>
+                                <goal>clean</goal>
                             </goals>
                         </execution>
                     </executions>
