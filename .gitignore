@@ -23,4 +23,4 @@ target
 build/
 **/build/
 
-
+**/.flattened-pom.xml
